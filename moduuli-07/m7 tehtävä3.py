@@ -1,6 +1,6 @@
 #7.3
 print()
-print("Tehtävä 3")
+print("tehtävä 3")
 print()
 
 # kirjoita ohjelma lentoasematietojen hakemiseksi ja tallentamiseksi
@@ -10,6 +10,7 @@ print()
 
 
 def lisaa():
+    print()
     tunnus = input("Anna lentoaseman tunnus: ")
     nimi = input("Anna lentoaseman nimi: ")
     print()
@@ -17,34 +18,42 @@ def lisaa():
     return
 
 
-def hae():
+def hae_nimi():
     tunnus = input("Anna lentoaseman tunnus: ")
     if tunnus in lentoasemat:
-        print(f"Lentoasema {tunnus} on {lentoasemat[nimi]}.")
+        print(f"Lentoasema {tunnus} on {lentoasemat[tunnus]}.")
+        print()
     return
 
 
-
+def hae_tunnus():
+    nimi = input("Anna lentoaseman nimi: ")
+    if nimi in lentoasemat:
+        print(f"Lentoaseman {nimi} tunnus on {lentoasemat[nimi]}.")
+        print()
+    return
 
 # pääohjelma:
-# luodaan sanakirja, jolle annetaan yhden alkion
 
-
-lentoasemat = {"Helsinki-Vantaan lentoasema" : "EFHK"}
+# luodaan sanakirja, jolle annetaan yksi alkio
+lentoasemat = {"EFHK":"Helsinki-Vantaan lentoasema"}
 
 toiminto = -1
 
-while toiminto !=3:
-    print("0 = lentoaseman tiedot")
+while toiminto !=4:
+    print("Valittavat toiminnot: ")
     print("1 = lisää uusi lentoasema")
-    print("2 = hae lentoasema")
-    print("3 = lopeta")
+    print("2 = hae lentoaseman nimi")
+    print("3 = hae lentoaseman tunnus")
+    print("4 = lopeta")
     print()
 
     toiminto = int(input("Valitse toiminto: "))
     if toiminto == 1:
         lisaa()
     elif toiminto == 2:
-        hae()
+        hae_nimi()
+    elif toiminto == 3:
+        hae_tunnus()
 
 print("Toiminnot lopetettu.")
