@@ -18,20 +18,13 @@ def lisaa():
     return
 
 
-def hae_nimi():
+def hae():
     tunnus = input("Anna lentoaseman tunnus: ")
     if tunnus in lentoasemat:
         print(f"Lentoasema {tunnus} on {lentoasemat[tunnus]}.")
         print()
     return
 
-
-def hae_tunnus():
-    nimi = input("Anna lentoaseman nimi: ")
-    if nimi in lentoasemat:
-        print(f"Lentoaseman {nimi} tunnus on {lentoasemat[nimi]}.")
-        print()
-    return
 
 # pääohjelma:
 
@@ -40,20 +33,17 @@ lentoasemat = {"EFHK":"Helsinki-Vantaan lentoasema"}
 
 toiminto = -1
 
-while toiminto !=4:
+while toiminto !=3:
     print("Valittavat toiminnot: ")
     print("1 = lisää uusi lentoasema")
-    print("2 = hae lentoaseman nimi")
-    print("3 = hae lentoaseman tunnus")
-    print("4 = lopeta")
+    print("2 = hae lentoasema")
+    print("3 = lopeta")
     print()
 
     toiminto = int(input("Valitse toiminto: "))
     if toiminto == 1:
         lisaa()
     elif toiminto == 2:
-        hae_nimi()
-    elif toiminto == 3:
-        hae_tunnus()
+        hae()
 
 print("Toiminnot lopetettu.")
