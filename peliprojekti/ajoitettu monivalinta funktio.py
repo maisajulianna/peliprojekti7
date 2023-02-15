@@ -70,3 +70,4 @@ def QuestionC(vaihtoehto1, vaihtoehto2,vaihtoehto3,):
 
 
 QuestionC("joo", "ei", "idk")
+
