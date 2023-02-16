@@ -67,7 +67,8 @@ def QuestionC(vaihtoehto1, vaihtoehto2,vaihtoehto3,):
 
     print()
     print(f"Sait {points} pistettä")
+    return points
 
 
-QuestionC("joo", "ei", "idk")
+QuestionC("vaihtoehto1", "vaihtoehto2", "vaihtoehto3")
 
