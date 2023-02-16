@@ -75,7 +75,5 @@ def choose_start():
 
 
 
-
-
 choose_plane()
 choose_start()

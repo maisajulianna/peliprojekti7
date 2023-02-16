@@ -6,3 +6,4 @@ def timer(s):
     print("Aika loppui!")
 
 timer(5)
+
