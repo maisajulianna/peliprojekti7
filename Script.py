@@ -1,6 +1,7 @@
 import pygame
 import sys
 import time
+import mysql.connector
 
 def print_text(message, x, y, font_color=(0,0,0), font_type="C:/Users/natak/LentoPeli/images/magneto_bold.ttf", font_size=30):
     font_type = pygame.font.Font(font_type, font_size)
@@ -80,6 +81,21 @@ time.sleep(4)
 
 #save user_name in DB
 
+yhteys = mysql.connector.connect(
+         host='127.0.0.1',  #localhost
+         port=3306,         #MariaDB port
+         database='flight_game',
+         user='userN',
+         password='1234',
+         autocommit=True)       #меняется немедленно
+
+sql_save_user_name =   "insert into players values (0,'" + input_text + "');"
+print (sql_save_user_name)
+kursori = yhteys.cursor()
+
+kursori.execute(sql_save_user_name)
+
+yhteys.close()
 
 
 
