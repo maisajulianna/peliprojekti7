@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/LentoPeli.iml" filepath="$PROJECT_DIR$/.idea/LentoPeli.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/peliprojecti.iml" filepath="$PROJECT_DIR$/.idea/peliprojecti.iml" />
     </modules>
   </component>
 </project>
