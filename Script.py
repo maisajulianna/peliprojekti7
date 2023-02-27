@@ -7,33 +7,12 @@ def print_text(message, x, y, font_color=(0,0,0), font_type="C:/Users/natak/Lent
     text = font_type.render(message, True, font_color)
     screen.blit(text, (x,y))
     pygame.display.flip()
-def get_text():
-    need_input = True
-    input_text = ''
-    while need_input:
-        for event in pygame.event.get():
-            if need_input and event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    need_input = False
-                elif event.key == pygame.K_BACKSPACE:
-                    input_text = input_text - input_text[-1]
-                else:
-                    input_text = input_text + event.unicode
-                    print_text(input_text, 10, 300)
-    return input_text
-
-def start_game():
-    screen.fill(white)
-    pygame.display.flip()
-    time.sleep(2)
-    print_text("Aloitetaan...", 0,0)
-    print_text("Anna sinun nimisi pelissamme...", 4, 30)
-    user_name = get_text()
-    print_text("Hei, " + user_name, 10, 400)
-    time.sleep(20)
 
 
 
+
+
+#show welcom window
 
 pygame.init()
 
@@ -53,13 +32,13 @@ tarina_rect = tarina.get_rect()
 
 logo_rect = logo_rect.move([1,480])
 pygame.display.set_caption("MVMN-Lentopeli", "images\logo_game.png")
-while True:
+show_welcome = True
+while show_welcome:
         for event in pygame.event.get():
              if event.type == pygame.QUIT:
                 sys.exit()
-             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                        start_game()
+             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                show_welcome = False
 
         logo_rect = logo_rect.move([1,-1])
         screen.fill(white)
@@ -67,5 +46,40 @@ while True:
         screen.blit(logo, logo_rect)
         pygame.display.flip()
         time.sleep(0.01)
+
+
+#ask user_name
+
+screen.fill(white)
+pygame.display.flip()
+
+print_text("Aloitetaan...", 0,0)
+print_text("Anna sinun nimisi pelissamme...", 4, 30)
+need_input = True
+input_text = ''
+while need_input:
+        for event in pygame.event.get():
+            if need_input and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    need_input = False
+
+                elif event.key == pygame.K_BACKSPACE:
+                    input_text = input_text[0:-1]
+                    screen.fill(white)
+                    print_text("Aloitetaan...", 0, 0)
+                    print_text("Anna sinun nimisi pelissamme...", 4, 30)
+                    pygame.display.flip()
+                    print_text(input_text, 10, 300)
+
+                elif len(input_text) < 20:
+                    input_text = input_text + event.unicode
+                    print_text(input_text, 10, 300)
+
+print_text("Hei, " + input_text, 10, 400)
+time.sleep(4)
+
+#save user_name in DB
+
+
 
 
