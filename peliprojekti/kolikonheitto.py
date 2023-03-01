@@ -1,5 +1,6 @@
 
 
+
 import random
 
 kolikko = random.choice(["Kruuna", "Klaava"])

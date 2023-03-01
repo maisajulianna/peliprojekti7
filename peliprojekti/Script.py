@@ -26,13 +26,13 @@ need_input = False
 
 screen = pygame.display.set_mode(size)
 
-logo = pygame.image.load("images\logo_game.png")
+logo = pygame.image.load("images/logo_game.png")
 tarina = pygame.image.load("images/tarina.png")
 logo_rect = logo.get_rect()
 tarina_rect = tarina.get_rect()
 
 logo_rect = logo_rect.move([1,480])
-pygame.display.set_caption("MVMN-Lentopeli", "images\logo_game.png")
+pygame.display.set_caption("MVMN-Lentopeli", "images/logo_game.png")
 show_welcome = True
 while show_welcome:
         for event in pygame.event.get():
@@ -57,7 +57,7 @@ pygame.display.flip()
 print_text("Aloitetaan...", 0,0)
 print_text("Anna sinun nimisi pelissamme...", 4, 30)
 need_input = True
-input_text = ''
+user_name = ''
 while need_input:
         for event in pygame.event.get():
             if need_input and event.type == pygame.KEYDOWN:
@@ -65,21 +65,19 @@ while need_input:
                     need_input = False
 
                 elif event.key == pygame.K_BACKSPACE:
-                    input_text = input_text[0:-1]
+                    user_name = user_name[0:-1]
                     screen.fill(white)
                     print_text("Aloitetaan...", 0, 0)
                     print_text("Anna sinun nimisi pelissamme...", 4, 30)
                     pygame.display.flip()
-                    print_text(input_text, 10, 300)
+                    print_text(user_name, 10, 300)
 
-                elif len(input_text) < 20:
-                    input_text = input_text + event.unicode
-                    print_text(input_text, 10, 300)
+                elif len(user_name) < 20:
+                    user_name = user_name + event.unicode
+                    print_text(user_name, 10, 300)
 
-print_text("Hei, " + input_text, 10, 400)
+print_text("Hei, " + user_name, 10, 400)
 time.sleep(4)
-
-#save user_name in DB
 
 yhteys = mysql.connector.connect(
          host='127.0.0.1',  #localhost
@@ -87,9 +85,36 @@ yhteys = mysql.connector.connect(
          database='flight_game',
          user='userN',
          password='1234',
-         autocommit=True)       #меняется немедленно
+         autocommit=True)
 
-sql_save_user_name =   "insert into players values (0,'" + input_text + "');"
+#check if user_name already exists
+
+sql = "select player_id from players where screen_name = '" + user_name + "';"
+
+kursori = yhteys.cursor()
+
+kursori.execute(sql)
+result = kursori.fetchall()
+print (result)
+if not result:
+    print ("no user" + user_name)
+    # add user to DB
+
+    sql = "insert into players values (NULL, NULL,'" + user_name + "', " \
+                                      "NULL, NULL, NULL,NULL,NULL,NULL,NULL,NULL,NULL)"
+
+kursori.execute(sql)
+
+yhteys.close()
+
+# save user_name in DB
+
+
+
+
+"""
+
+sql_save_user_name =   "insert into players values (0,'" + user_name + "');"
 print (sql_save_user_name)
 kursori = yhteys.cursor()
 
@@ -98,6 +123,7 @@ kursori.execute(sql_save_user_name)
 yhteys.close()
 
 print("kaikki on ok")
+"""
 
 
 

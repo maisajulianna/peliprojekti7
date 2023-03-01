@@ -1,4 +1,6 @@
 
+
+
 import time
 
 # kolmen vaihtoehdon monivalitatehtävä, jossa oikea vastaus on c-kohta
