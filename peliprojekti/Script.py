@@ -100,10 +100,13 @@ if not result:
     print ("no user" + user_name)
     # add user to DB
 
-    sql = "insert into players values (NULL, NULL,'" + user_name + "', " \
-                                      "NULL, NULL, NULL,NULL,NULL,NULL,NULL,NULL,NULL)"
+    sql = "insert into players values (NULL, NULL,'" + user_name + "', NULL, NULL, NULL,NULL,NULL,NULL,NULL,NULL,NULL)"
+    kursori.execute(sql)
+else:
+    print_text("Olet jo aloittanut pelaamisen, jatkatko?", 10, 500)
+    time.sleep(5)
 
-kursori.execute(sql)
+
 
 yhteys.close()
 
