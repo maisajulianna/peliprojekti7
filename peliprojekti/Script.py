@@ -60,6 +60,8 @@ need_input = True
 user_name = ''
 while need_input:
         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
             if need_input and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     need_input = False
@@ -89,12 +91,12 @@ yhteys = mysql.connector.connect(
 
 #check if user_name already exists
 
-sql = "select player_id from players where screen_name = '" + user_name + "';"
+sql = "select * from players where screen_name = '" + user_name + "';"
 
 kursori = yhteys.cursor()
 
 kursori.execute(sql)
-result = kursori.fetchall()
+result = kursori.fetchone()
 print (result)
 if not result:
     print ("no user" + user_name)
@@ -103,7 +105,39 @@ if not result:
     sql = "insert into players values (NULL, NULL,'" + user_name + "', NULL, NULL, NULL,NULL,NULL,NULL,NULL,NULL,NULL)"
     kursori.execute(sql)
 else:
-    print_text("Olet jo aloittanut pelaamisen, jatkatko?", 10, 500)
+    print_text("Olet jo aloittanut pelaamisen, jatkatko?", 10, 500, font_size = 20)
+    print_text("A - jatka viimeistä peliä", 10, 520, font_size = 20)
+    print_text("B - aloita uusi peli poistamalla vanhan pelin tulokset", 10, 530, font_size = 20)
+    need_input = True
+    while need_input:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if need_input and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                   user = result            # user - kaikki tiedot nykyisestä pelaajasta
+                   print (user[0], user[1])
+                if event.key == pygame.K_b:    # "vanha" pelaaja aloittaa uuden pelin -
+                                               # on poistettava kaikki tiedot edellisestä pelistä
+                    sql = "update players set AF_= NULL, AN_ = NULL, AS_ = NULL, " \
+                          "EU_= NULL,NA_ = NULL, OC_= NULL,SA_ = NULL, time = NULL, " \
+                          "score = NULL where user_id=" + str(result[0])
+                    kursori.execute(sql)
+
+
+                elif event.key == pygame.K_BACKSPACE:
+                    user_name = user_name[0:-1]
+                    screen.fill(white)
+                    print_text("Aloitetaan...", 0, 0)
+                    print_text("Anna sinun nimisi pelissamme...", 4, 30)
+                    pygame.display.flip()
+                    print_text(user_name, 10, 300)
+
+                elif len(user_name) < 20:
+                    user_name = user_name + event.unicode
+                    print_text(user_name, 10, 300)
+
+    print_text("Hei, " + user_name, 10, 400)
     time.sleep(5)
 
 
