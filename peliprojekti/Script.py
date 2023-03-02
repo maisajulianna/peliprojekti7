@@ -116,14 +116,15 @@ else:
             if need_input and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                    user = result            # user - kaikki tiedot nykyisestä pelaajasta
-                   print (user[0], user[1])
                 if event.key == pygame.K_b:    # "vanha" pelaaja aloittaa uuden pelin -
                                                # on poistettava kaikki tiedot edellisestä pelistä
-                    sql = "update players set AF_= NULL, AN_ = NULL, AS_ = NULL, " \
-                          "EU_= NULL,NA_ = NULL, OC_= NULL,SA_ = NULL, time = NULL, " \
-                          "score = NULL where user_id=" + str(result[0])
+                    sql = "update players set AF_= NULL, AN_ = NULL, AS_ = NULL, " + \
+                          "EU_= NULL,NA_ = NULL, OC_= NULL,SA_ = NULL, time_sec = NULL, " + \
+                          "score = NULL where player_id=" + str(result[0])
                     kursori.execute(sql)
-
+                    sql = "select * from players where player_id=" + str(result[0])
+                    kursori.execute(sql)
+                    user = kursori.fetchone()
 
                 elif event.key == pygame.K_BACKSPACE:
                     user_name = user_name[0:-1]
