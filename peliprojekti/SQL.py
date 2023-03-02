@@ -1,5 +1,9 @@
  """
- CREATE TABLE players (
+DROP TABLE goal_reached;
+DROP TABLE goal;
+DROP TABLE game;
+
+ CREATE TABLE GAME (
  player_id INTEGER not NULL PRIMARY KEY AUTO_INCREMENT, 
  time_sec INTEGER DEFAULT 0,
  screen_Name VARCHAR(20),
