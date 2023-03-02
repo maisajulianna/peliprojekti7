@@ -6,7 +6,7 @@ import mysql.connector
 
 # Tämä funktio näyttää tekstiä peliikkunassa.
 def print_text(message, x, y, font_color=(0,0,0),\
-               font_type="C:/Users/natak/LentoPeli/images/magneto_bold.ttf", font_size=30):
+               font_type="C:/Users/natak/LentoPeli/images/magneto_bold.ttf", font_size=20):
 
     font_type = pygame.font.Font(font_type, font_size)
     text = font_type.render(message, True, font_color)
@@ -21,8 +21,7 @@ size = width, height = 600, 600
 speed = [1, 1]                  # lennon kuvan muutos videon aikana
 black = 0, 0, 0
 white = 255, 255, 255
-position = 0                    # nykyinen lähtökohta
-interspace = 50                 # riviväli
+
 
 need_input = False
 
@@ -58,8 +57,8 @@ while show_welcome:
 screen.fill(white)
 pygame.display.flip()
 
-print_text("Aloitetaan...", 1, position)
-position +=
+print_text("Aloitetaan...", 1, 1)
+
 print_text("Anna sinun nimisi pelissamme (20 symbolia maksimumi)...", 1, 50)
 need_input = True
 user_name = ''
@@ -74,16 +73,16 @@ while need_input:
                 elif event.key == pygame.K_BACKSPACE:
                     user_name = user_name[0:-1]
                     screen.fill(white)
-                    print_text("Aloitetaan...", 0, 0)
-                    print_text("Anna sinun nimisi pelissamme...", 1, 30)
+                    print_text("Aloitetaan...", 1, 1)
+                    print_text("Anna sinun nimisi pelissamme...", 1, 50)
                     pygame.display.flip()
-                    print_text(user_name, 10, 60)
+                    print_text(user_name, 1, 100)
 
                 elif len(user_name) < 20:
                     user_name = user_name + event.unicode
-                    print_text(user_name, 10, 60)
+                    print_text(user_name, 1, 100)
 
-print_text("Hei, " + user_name, 10, 90)
+print_text("Hei, " + user_name, 1, 150)
 time.sleep(4)
 
 yhteys = mysql.connector.connect(
@@ -96,7 +95,7 @@ yhteys = mysql.connector.connect(
 
 #check if user_name already exists
 
-sql = "select * from players where screen_name = '" + user_name + "';"
+sql = "select * from game where screen_name = '" + user_name + "';"
 
 kursori = yhteys.cursor()
 
@@ -107,7 +106,7 @@ if not result:
     print ("no user" + user_name)
     # add user to DB
 
-    sql = "insert into players values (NULL, NULL,'" + user_name + "', NULL, NULL, NULL,NULL,NULL,NULL,NULL,NULL,NULL)"
+    sql = "insert into game values (NULL, NULL,'" + user_name + "', NULL, NULL, NULL,NULL,NULL,NULL,NULL,NULL,NULL)"
     kursori.execute(sql)
 else:
     print_text("Olet jo aloittanut pelaamisen, jatkatko?", 10, 500, font_size = 20)
@@ -120,10 +119,10 @@ else:
                 sys.exit()
             if need_input and event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
-                   user = result            # user - kaikki tiedot nykyisestä pelaajasta
+                   user = result               # user - kaikki tiedot nykyisestä pelaajasta
                 if event.key == pygame.K_b:    # "vanha" pelaaja aloittaa uuden pelin -
                                                # on poistettava kaikki tiedot edellisestä pelistä
-                    sql = "update players set AF_= NULL, AN_ = NULL, AS_ = NULL, " + \
+                    sql = "update game set AF_= NULL, AN_ = NULL, AS_ = NULL, " + \
                           "EU_= NULL,NA_ = NULL, OC_= NULL,SA_ = NULL, time_sec = NULL, " + \
                           "score = NULL where player_id=" + str(result[0])
                     kursori.execute(sql)
