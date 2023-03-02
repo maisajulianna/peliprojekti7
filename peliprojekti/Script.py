@@ -3,37 +3,41 @@ import sys
 import time
 import mysql.connector
 
-def print_text(message, x, y, font_color=(0,0,0), font_type="C:/Users/natak/LentoPeli/images/magneto_bold.ttf", font_size=30):
+
+# Tämä funktio näyttää tekstiä peliikkunassa.
+def print_text(message, x, y, font_color=(0,0,0),\
+               font_type="C:/Users/natak/LentoPeli/images/magneto_bold.ttf", font_size=30):
+
     font_type = pygame.font.Font(font_type, font_size)
     text = font_type.render(message, True, font_color)
     screen.blit(text, (x,y))
     pygame.display.flip()
 
 
-
-
-
-#show welcom window
+#show welcome window
 
 pygame.init()
-
 size = width, height = 600, 600
-speed = [1, 1]
+speed = [1, 1]                  # lennon kuvan muutos videon aikana
 black = 0, 0, 0
 white = 255, 255, 255
+position = 0                    # nykyinen lähtökohta
+interspace = 50                 # riviväli
 
 need_input = False
 
 screen = pygame.display.set_mode(size)
-
 logo = pygame.image.load("images/logo_game.png")
 tarina = pygame.image.load("images/tarina.png")
 logo_rect = logo.get_rect()
 tarina_rect = tarina.get_rect()
 
-logo_rect = logo_rect.move([1,480])
-pygame.display.set_caption("MVMN-Lentopeli", "images/logo_game.png")
+logo_rect = logo_rect.move([1,height])
+pygame.display.set_caption("MVMN-Lentopeli")
 show_welcome = True
+
+# Näytämme pelin tarinan ja lentävän lentokoneen, kunnes käyttäjä napsauttaa ENTER
+
 while show_welcome:
         for event in pygame.event.get():
              if event.type == pygame.QUIT:
@@ -54,8 +58,9 @@ while show_welcome:
 screen.fill(white)
 pygame.display.flip()
 
-print_text("Aloitetaan...", 0,0)
-print_text("Anna sinun nimisi pelissamme...", 4, 30)
+print_text("Aloitetaan...", 1, position)
+position +=
+print_text("Anna sinun nimisi pelissamme (20 symbolia maksimumi)...", 1, 50)
 need_input = True
 user_name = ''
 while need_input:
@@ -70,15 +75,15 @@ while need_input:
                     user_name = user_name[0:-1]
                     screen.fill(white)
                     print_text("Aloitetaan...", 0, 0)
-                    print_text("Anna sinun nimisi pelissamme...", 4, 30)
+                    print_text("Anna sinun nimisi pelissamme...", 1, 30)
                     pygame.display.flip()
-                    print_text(user_name, 10, 300)
+                    print_text(user_name, 10, 60)
 
                 elif len(user_name) < 20:
                     user_name = user_name + event.unicode
-                    print_text(user_name, 10, 300)
+                    print_text(user_name, 10, 60)
 
-print_text("Hei, " + user_name, 10, 400)
+print_text("Hei, " + user_name, 10, 90)
 time.sleep(4)
 
 yhteys = mysql.connector.connect(
