@@ -263,7 +263,7 @@ def end():
         rivi += 40
     time.sleep(5)
 
-"""
+
 # main programm
 welcome()
 user = get_user() # user on lista, jossa on kaikki tiedot pelaajasta
@@ -271,7 +271,6 @@ user = get_user() # user on lista, jossa on kaikki tiedot pelaajasta
 time = 11
 score = 100
 airport = "AE-0004"
-print(user)
 
 # use it for saving results after each flight,
 # this function return True if all continents are visited by user and
@@ -281,14 +280,9 @@ save_result(user, time, score, airport)
 # use it if user would like to delete current game
 delete_game(user)
 
-
 #game over screen
-"""
+
 end()
-
-
-print ("game over ")
-
 
 
 
