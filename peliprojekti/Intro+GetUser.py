@@ -100,8 +100,8 @@ def get_user( ):
         print_text (screen, user_name + ", sinulla ei ole keskeneräisiä pelejä.", 10, 120)
         print_text(screen, "Aloitetaan uusi peli hetken kuluttua...", 10, 150)
         # add user to DB
-        sql = "insert into game values (NULL, NULL,'" + user_name + "',"\
-              " NULL, NULL, NULL,NULL,NULL,NULL,NULL,NULL,NULL)"
+        sql = "insert into game values (NULL, 0,'" + user_name + "',"\
+              " 0, NULL, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)"
         kursori.execute(sql)
         sql = "select * from game where screen_name = '" + user_name + "';"
         kursori.execute(sql)
@@ -128,9 +128,9 @@ def get_user( ):
                     if event.key == pygame.K_b:    # "vanha" pelaaja aloittaa uuden pelin -
                                                    # on poistettava kaikki tiedot edellisestä pelistä
                         print_text(screen, "b", 10, 240)
-                        sql = "update game set AF_= NULL, AN_ = NULL, AS_ = NULL, " + \
-                              "EU_= NULL,NA_ = NULL, OC_= NULL,SA_ = NULL, time_sec = NULL, " + \
-                              "score = NULL where player_id=" + str(result[0])
+                        sql = "update game set AF_= FALSE, AN_ = FALSE, AS_ = FALSE, " + \
+                              "EU_= FALSE, NA_ = FALSE, OC_= FALSE,SA_ = FALSE, time_sec = 0, " + \
+                              "score = 0, last_location = NULL where player_id=" + str(result[0])
                         kursori.execute(sql)
                         sql = "select * from game where player_id=" + str(result[0])
                         kursori.execute(sql)
@@ -147,39 +147,116 @@ def get_user( ):
 
     return user
 
+# use it for saving results after each flight,
+# this function return True if all continents are visited by user and
+# False otherwise
+def save_result(user, time, score, airport):
+    yhteys = mysql.connector.connect(
+        host='127.0.0.1',  # localhost
+        port=3306,  # MariaDB port
+        database='flight_game',
+        user='userN',
+        password='1234',
+        autocommit=True)
+    kursori = yhteys.cursor()
+
+    # check where airport located
+    sql = "select country.continent from country inner join airport" \
+          " on country.iso_country=airport.iso_country where airport.ident ='"+airport+"';"
+    kursori.execute(sql)
+    continent = kursori.fetchone()
+
+    """update player's results
+    user[0] - id
+    user[1] - time in sec
+    user[2] - screen name
+    user[3] - score
+    user[4] - last_location
+    user[5] - AF (afrikka)
+    user[6] - AN (antarktikka)
+    user[7] - AS (australia)
+    user[8] - EU (europa)
+    user[9] - NA (north amerika)
+    user[10] - OC (australia and ocean) ??? 
+    user[11] - SA (south america)
+    """
+    sql = "update game set last_location='"+str(airport)+"', time_sec=" + str(user[1]+time)+"," \
+                           " score=" + str(user[3]+score) + "," \
+                           " " + continent[0]+"_=TRUE where player_id=" + str(user[0]) + ";"
+
+    print (sql)
+    kursori.execute(sql)
+
+
+    # check if all continents were visited
+    sql = "select  AF_*AN_*AS_*EU_*NA_*OC_*SA_ from game where player_id=" + str(user[0]) + ";"
+    kursori.execute(sql)
+    result = kursori.fetchone()
+    result = bool(result[0])
+
+    #if result = True all continents were visited, so we need to save result to table result
+    if result:
+        sql = "select * from game where player_id=" + str(user[0]) + ";"
+        kursori.execute(sql)
+        user = kursori.fetchone()
+        """
+        user[0] - id
+        user[1] - time in sec
+        user[2] - screen name
+        user[3] - score
+        """
+        sql = "insert into results (player_id, screen_name, score, time_sec) " \
+              "values ("+str(user[0])+", '" + str(user[2]) + "', " + str(user[3]) + ", " + str(user[1])+ ");"
+        kursori.execute(sql)
+    yhteys.close()
+
+    return result
+
+# use it if user would like to delete current game
+def delete_game(user):
+    yhteys = mysql.connector.connect(
+        host='127.0.0.1',  # localhost
+        port=3306,  # MariaDB port
+        database='flight_game',
+        user='userN',
+        password='1234',
+        autocommit=True)
+    kursori = yhteys.cursor()
+
+    # delete current game of this user
+    sql = "delete from game where player_id=" + str(user[0])+ ";"
+    kursori.execute(sql)
+    yhteys.close()
+
 
 # main programm
 welcome()
-user = get_user() # kaikki tiedot pelaajasta
+user = get_user() # user on lista, jossa on kaikki tiedot pelaajasta
 
 time = 11
-pisteet = 100
+score = 100
 airport = "AE-0004"
+print(user)
+
 # use it for saving results after each flight,
-# this function return True if all continents are visited by user and False otherwise
+# this function return True if all continents are visited by user and
+# False otherwise
 save_result(user, time, score, airport)
 
-delete_game(user) # use it if user would like to delete current game
+# use it if user would like to delete current game
+delete_game(user)
+
+
+#game over screen
+#end()
 
 
 print ("game over ")
-print (user)
 
 
 
 
-"""
 
-sql_save_user_name =   "insert into players values (0,'" + user_name + "');"
-print (sql_save_user_name)
-kursori = yhteys.cursor()
-
-kursori.execute(sql_save_user_name)
-
-yhteys.close()
-
-print("kaikki on ok")
-"""
 
 
 
