@@ -228,7 +228,42 @@ def delete_game(user):
     kursori.execute(sql)
     yhteys.close()
 
+def end():
+    pygame.init()
+    size = width, height = 600, 600
+    white = 255, 255, 255
+    screen = pygame.display.set_mode(size)
+    pygame.display.set_caption("MVMN-Lentopeli")
+    screen.fill(white)
+    pygame.display.flip()
 
+    # make caption
+    print_text(screen, "TULOKSET", 250, 20)
+    print_text(screen, "Nimi", 60, 80)
+    print_text(screen, "Pisteet", 260, 80)
+    print_text(screen, "Aika", 360, 80)
+
+    # show all results from table results
+    yhteys = mysql.connector.connect(
+        host='127.0.0.1',  # localhost
+        port=3306,  # MariaDB port
+        database='flight_game',
+        user='userN',
+        password='1234',
+        autocommit=True)
+    kursori = yhteys.cursor()
+    sql = "select * from results;"
+    kursori.execute(sql)
+    tulokset = kursori.fetchall()
+    rivi = 130
+    for t in tulokset:
+        print_text(screen, str(t[1]), 60, rivi)
+        print_text(screen, str(t[2]), 260, rivi)
+        print_text(screen, str(t[3]), 360, rivi)
+        rivi += 40
+    time.sleep(5)
+
+"""
 # main programm
 welcome()
 user = get_user() # user on lista, jossa on kaikki tiedot pelaajasta
@@ -248,7 +283,8 @@ delete_game(user)
 
 
 #game over screen
-#end()
+"""
+end()
 
 
 print ("game over ")
