@@ -150,7 +150,7 @@ def get_user( ):
 # use it for saving results after each flight,
 # this function return True if all continents are visited by user and
 # False otherwise
-def save_result(user, time, score, airport):
+def save_result(user, time_sec, score, airport):
     yhteys = mysql.connector.connect(
         host='127.0.0.1',  # localhost
         port=3306,  # MariaDB port
@@ -180,9 +180,9 @@ def save_result(user, time, score, airport):
     user[10] - OC (australia and ocean) ??? 
     user[11] - SA (south america)
     """
-    sql = "update game set last_location='"+str(airport)+"', time_sec=" + str(user[1]+time)+"," \
+    sql = "update game set last_location='" + str(airport) +"', time_sec=" + str(user[1] + time_sec) + "," \
                            " score=" + str(user[3]+score) + "," \
-                           " " + continent[0]+"_=TRUE where player_id=" + str(user[0]) + ";"
+                           " " + continent[0] +"_=TRUE where player_id=" + str(user[0]) + ";"
 
     print (sql)
     kursori.execute(sql)
@@ -237,13 +237,28 @@ def end():
     screen.fill(white)
     pygame.display.flip()
 
-    # make caption
-    print_text(screen, "TULOKSET", 250, 20)
-    print_text(screen, "Nimi", 60, 80)
-    print_text(screen, "Pisteet", 260, 80)
-    print_text(screen, "Aika", 360, 80)
+    #lentava lentokone
+    logo = pygame.image.load("images/logo_game.png")
+    logo_rect = logo.get_rect()
+    logo_rect = logo_rect.move([1, height])
+    flight = True
+    x = 50
+    y = height - 50
+    while x < width-50:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+        logo_rect.centerx = x
+        y = 0.005*(x**2)-3.3*x+700
+        logo_rect.centery = y
 
-    # show all results from table results
+        screen.fill(white)
+        screen.blit(logo, logo_rect)
+        pygame.display.flip()
+        x += 1
+        time.sleep(0.01)
+
+# show all results from table results
     yhteys = mysql.connector.connect(
         host='127.0.0.1',  # localhost
         port=3306,  # MariaDB port
@@ -255,33 +270,38 @@ def end():
     sql = "select * from results;"
     kursori.execute(sql)
     tulokset = kursori.fetchall()
+    print_text(screen, "TULOKSET", 250, 20)
+    print_text(screen, "Nimi", 60, 80)
+    print_text(screen, "Pisteet", 260, 80)
+    print_text(screen, "Aika", 360, 80)
     rivi = 130
     for t in tulokset:
         print_text(screen, str(t[1]), 60, rivi)
         print_text(screen, str(t[2]), 260, rivi)
         print_text(screen, str(t[3]), 360, rivi)
         rivi += 40
+
     time.sleep(5)
 
-
-# main programm
+#
+# MAIN PROGRAMM
+#
 welcome()
 user = get_user() # user on lista, jossa on kaikki tiedot pelaajasta
 
-time = 11
+time_sec = 11
 score = 100
 airport = "AE-0004"
 
 # use it for saving results after each flight,
 # this function return True if all continents are visited by user and
 # False otherwise
-save_result(user, time, score, airport)
+save_result(user, time_sec, score, airport)
 
 # use it if user would like to delete current game
 delete_game(user)
 
 #game over screen
-
 end()
 
 
