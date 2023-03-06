@@ -1,0 +1,19 @@
+DROP TABLE if EXISTS plane_info
+CREATE TABLE plane_info;
+DROP plane_info;
+CREATE TABLE plane_info(
+id INT NOT NULL auto increment
+FOREIGN KEY (ident_ID) REFERENCES ident (ID),
+FOREIGN KEY (name_ID) REFERENCES NAME);
+
+
+CREATE TABLE plane_info(
+id INT NOT NULL,
+emission INT(3) null,
+risk INT(3) null,
+questions INT(3) null,
+velocity INT(3)null
+)
+
+INSERT INTO plane_info(id, emission, risk, questions, velocity)
+VALUES ('1', '2', '2', '16', '8'), ('2', '4', '2', '12', '8'), ('3', '8', '4', '8', '4'), ('4', '16', '8', '4', '2');
