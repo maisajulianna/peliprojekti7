@@ -13,21 +13,18 @@ connection = mysql.connector.connect(
     autocommit=True)
 
 
-saved = False
-kokonaispisteet_lista = []
-
-
-# funktio näyttää tekstiä peli-ikkunassa
 def print_text(screen, message, x, y, font_color=(0,0,0),\
                font_type = "C:/Users/maisa/PycharmProjects/ohjelmisto1/peliprojekti/images/magneto_bold.ttf", font_size=20):
+
+    # funktio näyttää tekstiä peli-ikkunassa
     font_type = pygame.font.Font(font_type, font_size)
     text = font_type.render(message, True, font_color)
     screen.blit(text, (x,y))
     pygame.display.flip()
 
 
-# Näytämme pelin tarinan ja lentävän lentokoneen, kunnes käyttäjä napsauttaa ENTER
 def welcome():
+    # Näytämme pelin tarinan ja lentävän lentokoneen, kunnes käyttäjä napsauttaa ENTER
     pygame.init()
     size = width, height = 600, 600
     speed = [1, 1]                  # lennon kuvan muutos videon aikana
@@ -58,8 +55,8 @@ def welcome():
     pygame.quit()
 
 
-#ask user_name
 def get_user():
+    # ask user_name
     pygame.init()
     size = width, height = 600, 600
     white = 255, 255, 255
@@ -302,21 +299,96 @@ def choose_plane():
 
 
 def choose_start():
-    print("Seuraavaksi saat valita lentokentän, jolta aloitat pelin.")
-    # sql =
+    sql = f"SELECT ident, name, municipality, iso_country, continent FROM airport " \
+          f"WHERE ident = 'DNMM' OR ident = 'ZBAA' OR ident = 'EDDF' " \
+          f"OR ident = 'KLAS' OR ident = 'YSSY' OR ident = 'SBJH'"
     # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
-    result = cursor.fetchall()
-    print(result)
-    times = 0
-    print("Lentokenttävaihtoehdot:")
+    airports = cursor.fetchall()
+    # print(airports)
     print()
-    for result in result:
-        byname = result[times]
-        print(f"Lentokenttä {byname[0]} maassa {byname[1]}.")
-        times = times + 1
-    print(result)
+    print("Seuraavaksi saat valita lentokentän, jolta aloitat pelin.")
+    print()
+    print("Lentokenttävaihtoehdot:")
+
+    chosen = False
+    while chosen == False:
+        chosen = True
+        times = 0
+        id = 1
+        for i in airports:
+            airport = airports[times]
+            print(f"{id}: Paikassa {airport[2]}, {airport[3]}, {airport[4]} lentokenttä '{airport[1]}'.")
+            times += 1
+            id += 1
+
+        print()
+        # airport_id ei vastaa airport-taulun lentokentän id:tä
+        airport_id = int(input("Valitsemasi lentokentän numero: "))
+        airport = 0
+
+        if airport_id == 1:
+            airports = airports[0]
+            airport = airports[0]
+            continent_abbr = airports[4]
+            continent = continent_name(continent_abbr)
+            print(f"Valitsemasi lentokenttä on {airports[1]} maanosassa {continent}.")
+        elif airport_id == 2:
+            airports = airports[1]
+            airport = airports[0]
+            continent_abbr = airports[4]
+            continent = continent_name(continent_abbr)
+            print(f"Valitsemasi lentokenttä on {airports[1]} maanosassa {continent}.")
+        elif airport_id == 3:
+            airports = airports[2]
+            airport = airports[0]
+            continent_abbr = airports[4]
+            continent = continent_name(continent_abbr)
+            print(f"Valitsemasi lentokenttä on {airports[1]} maanosassa {continent}.")
+        elif airport_id == 4:
+            airports = airports[3]
+            airport = airports[0]
+            continent_abbr = airports[4]
+            continent = continent_name(continent_abbr)
+            print(f"Valitsemasi lentokenttä on {airports[1]} maanosassa {continent}.")
+        elif airport_id == 5:
+            airports = airports[4]
+            airport = airports[0]
+            continent_abbr = airports[4]
+            continent = continent_name(continent_abbr)
+            print(f"Valitsemasi lentokenttä on {airports[1]} maanosassa {continent}.")
+        elif airport_id == 6:
+            airports = airports[5]
+            airport = airports[0]
+            continent_abbr = airports[4]
+            continent = continent_name(continent_abbr)
+            print(f"Valitsemasi lentokenttä on {airports[1]} maanosassa {continent}.")
+        else:
+            print()
+            print("Virheellinen arvo.")
+            print("Paina mitä vaan numeroa jos haluat lopettaa.")
+            again = int(input("Paina 1, jos haluat valita uudestaan: "))
+            print()
+            if again == 1:
+                print()
+                print("Vaihdoehdot uudestaan:")
+                chosen = False
+            else:
+                print("Lopetit pelin.")
+
+        if airport_id >= 1 and airport_id <= 6:
+            print()
+            print("Oletko tyytyväinen valintaasi?")
+            confirmation = input("Valitse uudelleen painamalla mitä tahansa, varmista valinta painamalla Enter.")
+            if confirmation == "":
+                print("Lentokenttä valittu!")
+                chosen = True
+            else:
+                print()
+                print("Valitse uudestaan:")
+                chosen = False
+    return airport_id, airport, continent
 
 
 def QuestionA(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
@@ -366,16 +438,14 @@ def QuestionA(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
         if points == 0:
             endtime = 20
             print("Yrityksesi loppuivat.")
-            break
+            start = stop
 
         # tehtävä loppuu ja pisteet nollautuu, jos vastaamisessa menee yli 20 sekuntia
         now = time.time()
         timer = now - start_time
         if timer >= aika:
             print("Aika loppui :(")
-            points = 0
-            endtime = 20
-            break
+            start = stop
 
         # kulunut aika tulostuu, jos käyttäjä ei ole vielä antanut oikeaa vastausta
         if answer != "A" and answer != "a":
@@ -532,23 +602,27 @@ def QuestionC(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
     return points, round(endtime)
 
 
-kokonaispisteet_summa = 0
-aikaakulunut = 0
-
 def pistelaskuri():
     # varmistusprinttaus
-    print(kokonaispisteet_lista)
+    # print(f"Kokonaispistelista funktiossa {kokonaispisteet_lista}")
+    print()
+
+    # funktion oma muuttuja ('yhteispisteet')
+    yhteispisteet = kokonaispisteet_summa
 
     # lisätään saadut pisteet kokonaispistemäärään
     for a in kokonaispisteet_lista:
-        kokonaispisteet_summa += a[0]
-    print(f"Kokonaispisteesi on {kokonaispisteet_summa}.")
+        yhteispisteet += a[0]
+    print(f"Sinulla on tällä hetkellä {yhteispisteet} pistettä.")
+
+    # funktion sisäinen muuttuja 'yhteisaika'
+    yhteisaika = aikaakulunut
 
     # lisätään kulunut aika kokonaismäärään
     for a in kokonaispisteet_lista:
-        aikaakulunut += a[1]
-    print(f"Aikaa on kulunut {aikaakulunut} tuntia.")
-    return kokonaispisteet_summa, aikaakulunut
+        yhteisaika += a[1]
+    print(f"Aikaa on kulunut {yhteisaika} tuntia.")
+    return yhteispisteet, yhteisaika
 
 
 def end():
@@ -602,34 +676,53 @@ def end():
 
 # -- pääohjelma ---------------------------------------------------------------------------------------------
 
-# pelaajan nimen valinta ja pelaajanumeron luominen
 
-welcome()
-user = get_user()
+# alkumäärittelyjä
+saved = False
+kokonaispisteet_lista = []
+kokonaispisteet_summa = 0
+aikaakulunut = 0
 
+
+
+# asking username and welcoming player
+# welcome()
+# user = get_user()
 timenoprint(1)
 
+
 # lentokoneen ja lähtöpaikan valinta
-plane = choose_plane()
-# start = choose_airport()
+# result = choose_plane()
+# planeNumber = result[0]
+# plane = result[1]
+
+# result = choose_airport()
+# airport_id = result[0]
+# start_airport = result[1]
+
+
+# ensimmäisen matkakohteen valinta
+# travel()
 
 
 peliohjeet()
 
 # tehtäviä
-result = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
-result = kokonaispisteet_lista.append(result)
+resultA = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+kokonaispisteet_lista.append(resultA)
 
-result = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
-result = kokonaispisteet_lista.append(result)
+resultB = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+kokonaispisteet_lista.append(resultB)
 
-result = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
-result = kokonaispisteet_lista.append(result)
+resultC = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+kokonaispisteet_lista.append(resultC)
 
 # tehtävien pisteet
 result = pistelaskuri()
 kokonaispisteet_summa = result[0]
 aikaakulunut = result[1]
+
+# print(f"Varmistus pääohjelmassa: pisteitä on {kokonaispisteet_summa} ja aikaa kulunut {aikaakulunut}.")
 
 
 choose_options()
