@@ -539,7 +539,7 @@ def choose_country(to_continent):
     print()
     print("Valitsemasi maanosan maiden ISO-koodit:")
 
-    sql = f"SELECT iso_country FROM airport WHERE continent = '{to_continent}' GROUP BY iso_country"
+    sql = f"SELECT name FROM country WHERE continent = '{to_continent}' GROUP BY name"
     # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
@@ -988,7 +988,7 @@ def QuestionC(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
     return points, round(endtime)
 
 
-def pistelaskuri():
+def pistelaskuri(kokonaispisteet_lista):
     # varmistusprinttaus
     # print(f"Kokonaispistelista funktiossa {kokonaispisteet_lista}")
     print()
@@ -1011,18 +1011,297 @@ def pistelaskuri():
     return yhteispisteet, yhteisaika
 
 
-def travel_questions():
+def travel_questions1(planeNumber):
     sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
     print(sql)
-    cursor = connection.cursor
+    cursor = connection.cursor()
     cursor.execute(sql)
-    planelist = cursor.fetchall()
+    planelist_list = cursor.fetchall()
+    planelist = planelist_list[0]
     print(planelist)
 
-    print(f"Valitsemallasi lentokoneella {planelist[0]} riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
+    print()
+    print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
     input("Paina Enter jatkaaksesi. ")
 
-    if planeNumber == 1:
+    if planeNumber == 1 or planeNumber == 2:
+        result1 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result1)
+        result2 = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result2)
+        result3 = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result3)
+        result4 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result4)
+        incident_risk1(1)
+    if planeNumber == 3:
+        #QuestionC()
+        #QUestionA()
+        incident_risk1(2)
+    if planeNumber == 4:
+        #QuestionB()
+        incident_risk1(3)
+
+
+def travel_questions2(planeNumber):
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
+    print(sql)
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    planelist_list = cursor.fetchall()
+    planelist = planelist_list[0]
+    print(planelist)
+
+    print()
+    print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
+    input("Paina Enter jatkaaksesi. ")
+
+    kokonaispisteet_lista = []
+    if planeNumber == 1 or planeNumber == 2:
+        result1 = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result1)
+        result2 = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result2)
+        result3 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result3)
+        result4 = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result4)
+        incident_risk2(1)
+    if planeNumber == 3:
+        #QuestionA()
+        #QUestionA()
+        incident_risk2(2)
+    if planeNumber == 4:
+        #QuestionB()
+        incident_risk2(3)
+    return kokonaispisteet_lista
+
+
+def travel_questions3(planeNumber):
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
+    print(sql)
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    planelist_list = cursor.fetchall()
+    planelist = planelist_list[0]
+    print(planelist)
+
+    print()
+    print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
+    input("Paina Enter jatkaaksesi. ")
+
+    kokonaispisteet_lista = []
+    if planeNumber == 1 or planeNumber == 2:
+        result1 = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result1)
+        result2 = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result2)
+        result3 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result3)
+        result4 = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result4)
+        incident_risk3(1)
+    if planeNumber == 3:
+        #QuestionC()
+        #QUestionB()
+        incident_risk3(2)
+    if planeNumber == 4:
+        #QuestionC()
+        incident_risk3(3)
+    return kokonaispisteet_lista
+
+
+def travel_questions4(planeNumber):
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
+    print(sql)
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    planelist_list = cursor.fetchall()
+    planelist = planelist_list[0]
+    print(planelist)
+
+    print()
+    print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
+    input("Paina Enter jatkaaksesi. ")
+
+    kokonaispisteet_lista = []
+    if planeNumber == 1 or planeNumber == 2:
+        result1 = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result1)
+        result2 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result2)
+        result3 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result3)
+        result4 = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result4)
+        incident_risk4(1)
+    if planeNumber == 3:
+        #QuestionB()
+        #QUestionB()
+        incident_risk4(2)
+    if planeNumber == 4:
+        #QuestionA()
+        incident_risk4(3)
+    return kokonaispisteet_lista
+
+
+def travel_questions5(planeNumber):
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
+    print(sql)
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    planelist_list = cursor.fetchall()
+    planelist = planelist_list[0]
+    print(planelist)
+
+    print()
+    print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
+    input("Paina Enter jatkaaksesi. ")
+
+    kokonaispisteet_lista = []
+    if planeNumber == 1 or planeNumber == 2:
+        result1 = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result1)
+        result2 = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result2)
+        result3 = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result3)
+        result4 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result4)
+        incident_risk5(1)
+    if planeNumber == 3:
+        #QuestionA()
+        #QUestionC()
+        incident_risk5(2)
+    if planeNumber == 4:
+        #QuestionC()
+        incident_risk5(3)
+    return kokonaispisteet_lista
+
+
+def travel_questions6(planeNumber):
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
+    print(sql)
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    planelist_list = cursor.fetchall()
+    planelist = planelist_list[0]
+    print(planelist)
+
+    print()
+    print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
+    input("Paina Enter jatkaaksesi. ")
+
+    kokonaispisteet_lista = []
+    if planeNumber == 1 or planeNumber == 2:
+        result1 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result1)
+        result2 = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result2)
+        result3 = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result3)
+        result4 = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result4)
+        incident_risk6(1)
+    if planeNumber == 3:
+        #QuestionB()
+        #QUestionC()
+        incident_risk6(2)
+    if planeNumber == 4:
+        #QuestionA()
+        incident_risk6(3)
+    return kokonaispisteet_lista
+
+
+def travel_questions7(planeNumber):
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
+    print(sql)
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    planelist_list = cursor.fetchall()
+    planelist = planelist_list[0]
+    print(planelist)
+
+    print()
+    print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
+    input("Paina Enter jatkaaksesi. ")
+
+    kokonaispisteet_lista = []
+    if planeNumber == 1 or planeNumber == 2:
+        result1 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result1)
+        result2 = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result2)
+        kokonaispisteet_lista.append(result3)
+        result4 = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
+        kokonaispisteet_lista.append(result4)
+        incident_risk7(1)
+    if planeNumber == 3:
+        #QuestionC()
+        #QUestionA()
+        incident_risk7(2)
+    if planeNumber == 4:
+        #QuestionB()
+        incident_risk7(3)
+    return kokonaispisteet_lista
+
+
+
+# --- --- random eventit
+def incident_risk1(luku):
+    incident = random.randint(1,5)
+    if incident <= luku:
+        print("RANDOM EVENT")
+    else:
+        print("Saavuit kohteeseen turvallisesti!")
+
+
+def incident_risk2(luku):
+    incident = random.randint(1,5)
+    if incident <= luku:
+        print("RANDOM EVENT")
+    else:
+        print("Saavuit kohteeseen turvallisesti!")
+
+
+def incident_risk3(luku):
+    incident = random.randint(1,5)
+    if incident <= luku:
+        print("RANDOM EVENT")
+    else:
+        print("Saavuit kohteeseen turvallisesti!")
+
+
+def incident_risk4(luku):
+    incident = random.randint(1,5)
+    if incident <= luku:
+        print("RANDOM EVENT")
+    else:
+        print("Saavuit kohteeseen turvallisesti!")
+
+
+def incident_risk5(luku):
+    incident = random.randint(1,5)
+    if incident <= luku:
+        print("RANDOM EVENT")
+    else:
+        print("Saavuit kohteeseen turvallisesti!")
+
+
+def incident_risk6(luku):
+    incident = random.randint(1,5)
+    if incident <= luku:
+        print("RANDOM EVENT")
+    else:
+        print("Saavuit kohteeseen turvallisesti!")
+
+
+def incident_risk7(luku):
+    incident = random.randint(1,5)
+    if incident <= luku:
+        print("RANDOM EVENT")
+    else:
+        print("Saavuit kohteeseen turvallisesti!")
 
 
 
@@ -1046,6 +1325,7 @@ user = get_user()
 timenoprint(1)
 
 
+# --- MAIN PELI:
 
 while MainGameOver == False:
     # lentokoneen ja lähtöpaikan valinta
@@ -1068,24 +1348,15 @@ while MainGameOver == False:
 
     peliohjeet()
 
-
-    # travel_questions()
-
-
-    # tehtäviä
-    resultA = QuestionA("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
-    kokonaispisteet_lista.append(resultA)
-
-    resultB = QuestionB("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
-    kokonaispisteet_lista.append(resultB)
-
-    resultC = QuestionC("tehtävänanto", "vaihtoehto1", "vaihtoehto2", "vaihtoehto3", 20)
-    kokonaispisteet_lista.append(resultC)
-
-    # tehtävien pisteet
-    result = pistelaskuri()
+    # 1. kohde
+    kokonaispisteet_lista = travel_questions1(planeNumber)
+    result = pistelaskuri(kokonaispisteet_lista)
     kokonaispisteet_summa = result[0]
     aikaakulunut = result[1]
+
+
+    # tehtävien pisteet
+
 
     # print(f"Varmistus pääohjelmassa: pisteitä on {kokonaispisteet_summa} ja aikaa kulunut {aikaakulunut}.")
 
