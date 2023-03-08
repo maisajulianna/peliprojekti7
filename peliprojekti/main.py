@@ -15,7 +15,8 @@ connection = mysql.connector.connect(
 
 
 # --- --- alkujuttuja
-def print_text(screen, message, x, y, font_color=(0,0,0), font_type = "C:/Users/natak/peliprojekti7/peliprojekti/images/magneto_bold.ttf", font_size=20):
+def print_text(screen, message, x, y, font_color=(0,0,0),\
+               font_type = "C:/Users/maisa/PycharmProjects/ohjelmisto1/peliprojekti/images/magneto_bold.ttf", font_size=20):
 
     # funktio näyttää tekstiä peli-ikkunassa
     font_type = pygame.font.Font(font_type, font_size)
@@ -396,11 +397,7 @@ def choose_start():
 
         print()
         # airport_id ei vastaa airport-taulun lentokentän id:tä
-        airport_idStr = input("Valitsemasi lentokentän numero: ")
-        if airport_idStr == "":
-            airoport_id = 0
-        else:
-            airport_id = int(airport_idStr)
+        airport_id = int(input("Valitsemasi lentokentän numero: "))
         airport = 0
 
         if airport_id == 1:
@@ -442,12 +439,10 @@ def choose_start():
         else:
             print()
             print("Virheellinen arvo.")
-            print("Paina mitä vaan numeroa jos haluat lopettaa.")
-            again = int(input("Paina 1, jos haluat valita uudestaan: "))
+            print("Paina mitä vain, jos haluat lopettaa.")
+            again = input("Paina Enter, jos haluat valita uudestaan: ")
             print()
-            if again == 1:
-                print()
-                print("Vaihdoehdot uudestaan:")
+            if again == "":
                 chosen = False
             else:
                 print("Lopetit pelin.")
@@ -460,9 +455,13 @@ def choose_start():
                 print("Lentokenttä valittu!")
                 chosen = True
             else:
-                print()
-                print("Valitse uudestaan:")
                 chosen = False
+                sql = f"SELECT ident, name, municipality, iso_country, continent FROM airport " \
+                      f"WHERE ident = 'DNMM' OR ident = 'ZBAA' OR ident = 'EDDF' " \
+                      f"OR ident = 'KLAS' OR ident = 'YSSY' OR ident = 'SBJH'"
+                cursor = connection.cursor()
+                cursor.execute(sql)
+                airports = cursor.fetchall()
     return airport_id, airport, continent
 
 
@@ -495,19 +494,14 @@ def choose_continent():
     while chosen == False:
         gameover1 = False
         print()
-
-        continentNroStr = input("Haluamasi maanosan numero: ")
-        if continentNroStr == "":
-            continentNro = 0
-        else:
-            continentNro = int(continentNroStr)
-        continentA = 0
+        continentNro = int(input("Haluamasi maanosan numero: "))
+        to_continent = 0
 
         if continentNro >= 1 and continentNro <= 7:
             index = continentNro - 1
             continents = continents[index]
-            continentA = continents[0]
-            continent = continent_name(continentA)
+            to_continent = continents[0]
+            continent = continent_name(to_continent)
             print(f"Valitsemasi maanosa on {continent}.")
         else:
             print()
@@ -535,7 +529,7 @@ def choose_continent():
                 cursor = connection.cursor()
                 cursor.execute(sql)
                 continents = cursor.fetchall()
-    return continentA, gameover1
+    return to_continent, gameover1
 
 
 def choose_country(to_continent):
@@ -1025,10 +1019,12 @@ def travel_questions():
     planelist = cursor.fetchall()
     print(planelist)
 
-    print(f"Valitsemallasi lentokoneella ")
+    print(f"Valitsemallasi lentokoneella {planelist[0]} riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
+    input("Paina Enter jatkaaksesi. ")
 
     if planeNumber == 1:
-        print()
+
+
 
 
 
