@@ -80,11 +80,11 @@ def get_user( ):
                         print_text(screen, "Aloitetaan...", 10, 1)
                         print_text(screen, "Anna sinun nimisi pelissamme...", 10, 30)
                         pygame.display.flip()
-                        print_text(screen, user_name, 10, 60)
+                        print_text(screen, user_name, 100, 30)
 
                     elif len(user_name) < 20:
                         user_name = user_name + event.unicode
-                        print_text(screen, user_name, 10, 60)
+                        print_text(screen, user_name, 100, 30)
 
     print_text(screen, "Hei, " + user_name + "!", 10, 90)
     time.sleep(3)
@@ -95,18 +95,22 @@ def get_user( ):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     result = kursori.fetchone()
-
+    print (result)
     if not result:  #Jos tietokannassa ei ole samannimistä käyttäjää
         print_text (screen, user_name + ", sinulla ei ole keskeneräisiä pelejä.", 10, 120)
         print_text(screen, "Aloitetaan uusi peli hetken kuluttua...", 10, 150)
         # add user to DB
         sql = "insert into game values (NULL, 0,'" + user_name + "',"\
               " 0, NULL, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)"
+        print (sql)
         kursori.execute(sql)
         sql = "select * from game where screen_name = '" + user_name + "';"
         kursori.execute(sql)
         user = kursori.fetchone()    # user - kaikki tiedot nykyisestä pelaajasta
+        print (user)
         need_input = False
+        time.sleep(3)
+        pygame.quit()
 
     else: #Jos tietokannassa on samannimistä käyttäjää
         print_text(screen, "Olet jo aloittanut pelaamisen, jatkatko?", 10, 120)
@@ -282,6 +286,7 @@ def end():
         rivi += 40
 
     time.sleep(5)
+    pygame.quit()
 
 #
 # MAIN PROGRAMM
@@ -299,7 +304,7 @@ airport = "AE-0004"
 save_result(user, time_sec, score, airport)
 
 # use it if user would like to delete current game
-delete_game(user)
+#delete_game(user)
 
 #game over screen
 end()

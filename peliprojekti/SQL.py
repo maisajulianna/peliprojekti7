@@ -24,4 +24,22 @@ CREATE TABLE RESULTS (
  screen_name VARCHAR(20),
  score INTEGER,
  time_sec INTEGER);
+ 
+CREATE TABLE plane_info(
+id INT NOT NULL,
+emission INT(3) null,
+risk INT(3) null,
+questions INT(3) null,
+velocity INT(3)null,
+type VARCHAR(40));
+
+INSERT INTO plane_info(id, emission, risk, questions, velocity, type)
+VALUES (1, 2, 2, 16, 8,'vähänpästoinen');
+INSERT INTO plane_info(id, emission, risk, questions, velocity, type)
+VALUES (2, 4, 2, 12, 8,'matkustajankone');
+INSERT INTO plane_info(id, emission, risk, questions, velocity, type)
+VALUES (3, 8, 4, 8, 4,'yksityiskone');
+INSERT INTO plane_info(id, emission, risk, questions, velocity, type)
+VALUES (4, 16, 8, 4, 2,'hävittäjä');
+
  """

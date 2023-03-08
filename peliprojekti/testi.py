@@ -1,14 +1,3 @@
-import mysql.connector
-
-connection = mysql.connector.connect(
-    host='127.0.0.1',
-    port=3306,
-    database='flight_game',
-    user="userN",
-    password="1234",
-    autocommit=True)
-
-
 def continent_name(continent_abbr):
     if continent_abbr == 'AF':
         continent_fi = "Afrikka"
@@ -92,7 +81,7 @@ def choose_continent():
     return continentA, gameover1
 
 
-def choose_country():
+def choose_country(to_continent):
     print()
     print()
     print("Valitse seuraavaksi maa.")
@@ -159,7 +148,7 @@ def choose_country():
     return to_country, gameover2
 
 
-def choose_municipality():
+def choose_municipality(to_country):
     print()
     print("Valitse seuraavaksi kaupunki.")
     print()
@@ -183,25 +172,25 @@ def choose_municipality():
         id = 1
 
         for i in municipalities:
-            if times != 0:
-                one = municipalities[times]
-                municipality = one[0]
-                print(f"{id}: {municipality}")
-                id += 1
+            #if times != 0:
+            one = municipalities[times]
+            municipality = one[0]
+            print(f"{id}: {municipality}")
+            id += 1
             times += 1
 
 
         print()
         list_index = (len(municipalities)) - 1
-        print(list_index)
+        #print(list_index)
         municipalityNro = int(input("Haluamasi kaupungin numero: "))
         municipality = 0
 
-        if municipalityNro >= 1 and municipalityNro <= list_index:
+        if municipalityNro >= 1 and municipalityNro <= list_index+1:
             index = municipalityNro - 1
-            municipalities = municipalities[index]
-            municipality = municipalities[0]
-            print(f"Valitsemasi maa on {municipality}.")
+            m = municipalities[index]
+            municipality = m[0]
+            print(f"Valitsemasi kaupunki on {municipality}.")
         else:
             print()
             print("Virheellinen arvo.")
@@ -230,7 +219,7 @@ def choose_municipality():
     return municipality, gameover3
 
 
-def choose_airport():
+def choose_airport(municipality):
     print()
     print("Valitse vielä lentokenttä.")
     print()
@@ -307,24 +296,25 @@ def travel():
     while gameover_main == False:
         result = choose_continent()
         to_continent = result[0]
-        print(result[0])
+        print(result)
+        a = input("press enter to continue")
         gameover_main = result[1]
         if gameover_main == True:
             break
 
-        result = choose_country()
+        result = choose_country(to_continent)
         to_country = result[0]
         gameover_main = result[1]
         if gameover_main == True:
             break
 
-        result = choose_municipality()
+        result = choose_municipality(to_country)
         municipality = result[0]
         gameover_main = result[1]
         if gameover_main == True:
             break
 
-        result = choose_airport()
+        result = choose_airport(municipality)
         to_airport = result[0]
         airport_ident = result[1]
         gameover_main = result[2]
@@ -335,7 +325,17 @@ def travel():
 
 
 # -- -- -- pääohjelma -- -- --
+import mysql.connector
 
+connection = mysql.connector.connect(
+    host='127.0.0.1',
+    port=3306,
+    database='flight_game',
+    user="userN",
+    password="1234",
+    autocommit=True)
+
+to_airport = " "
 result = travel()
 travel_airport = result[0]
 travel_continent = result[2]

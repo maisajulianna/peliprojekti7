@@ -15,8 +15,7 @@ connection = mysql.connector.connect(
 
 
 # --- --- alkujuttuja
-def print_text(screen, message, x, y, font_color=(0,0,0),\
-               font_type = "C:/Users/maisa/PycharmProjects/ohjelmisto1/peliprojekti/images/magneto_bold.ttf", font_size=20):
+def print_text(screen, message, x, y, font_color=(0,0,0), font_type = "C:/Users/natak/peliprojekti7/peliprojekti/images/magneto_bold.ttf", font_size=20):
 
     # funktio näyttää tekstiä peli-ikkunassa
     font_type = pygame.font.Font(font_type, font_size)
@@ -397,7 +396,11 @@ def choose_start():
 
         print()
         # airport_id ei vastaa airport-taulun lentokentän id:tä
-        airport_id = int(input("Valitsemasi lentokentän numero: "))
+        airport_idStr = input("Valitsemasi lentokentän numero: ")
+        if airport_idStr == "":
+            airoport_id = 0
+        else:
+            airport_id = int(airport_idStr)
         airport = 0
 
         if airport_id == 1:
@@ -492,7 +495,12 @@ def choose_continent():
     while chosen == False:
         gameover1 = False
         print()
-        continentNro = int(input("Haluamasi maanosan numero: "))
+
+        continentNroStr = input("Haluamasi maanosan numero: ")
+        if continentNroStr == "":
+            continentNro = 0
+        else:
+            continentNro = int(continentNroStr)
         continentA = 0
 
         if continentNro >= 1 and continentNro <= 7:
@@ -1020,7 +1028,7 @@ def travel_questions():
     print(f"Valitsemallasi lentokoneella ")
 
     if planeNumber == 1:
-
+        print()
 
 
 
