@@ -11,27 +11,23 @@ connection = mysql.connector.connect(
 
 def continent_name(continent_abbr):
     if continent_abbr == 'AF':
-        continent = "Afrikka"
+        continent_fi = "Afrikka"
     elif continent_abbr == 'EU':
-        continent = "Eurooppa"
+        continent_fi = "Eurooppa"
     elif continent_abbr == 'NA':
-        continent = "Pohjois-Amerikka"
+        continent_fi = "Pohjois-Amerikka"
     elif continent_abbr == 'SA':
-        continent = "Etelä-Amerikka"
+        continent_fi = "Etelä-Amerikka"
     elif continent_abbr == 'OC':
-        continent = "Australia ja Oseania"
+        continent_fi = "Australia ja Oseania"
     elif continent_abbr == 'AS':
-        continent = "Aasia"
+        continent_fi = "Aasia"
     elif continent_abbr == 'AN':
-        continent = "Antarktika"
-    return continent
+        continent_fi = "Antarktika"
+    return continent_fi
 
 
 def choose_continent():
-    print()
-    print("Mihin haluaisit lentää?")
-    print()
-    print("Valitse aluksi maanosa: ")
     sql = f"SELECT continent FROM airport GROUP BY continent"
     # print(sql)
     cursor = connection.cursor()
@@ -39,40 +35,43 @@ def choose_continent():
     continents = cursor.fetchall()
     # print(continents)
 
+    print()
+    print("Mihin haluaisit lentää?")
+    print()
+    print("Valitse aluksi maanosa: ")
+
+    times = 0
+    id = 1
+    for i in continents:
+        one = continents[times]
+        continent_abbr = one[0]
+        continenT = continent_name(continent_abbr)
+        print(f"{id}: {continenT}")
+        times += 1
+        id += 1
+
     chosen = False
     while chosen == False:
         gameover1 = False
-        times = 0
-        id = 1
-        for i in continents:
-            one = continents[times]
-            continent_abbr = one[0]
-            continent = continent_name(continent_abbr)
-            print(f"{id}: {continent}")
-            times += 1
-            id += 1
-
         print()
         continentNro = int(input("Haluamasi maanosan numero: "))
-        to_continent = 0
+        continentA = 0
 
         if continentNro >= 1 and continentNro <= 7:
             index = continentNro - 1
             continents = continents[index]
-            to_continent = continents[0]
-            continent = continent_name(to_continent)
+            continentA = continents[0]
+            continent = continent_name(continentA)
             print(f"Valitsemasi maanosa on {continent}.")
         else:
             print()
             print("Virheellinen arvo.")
-            print("Paina mitä vaan numeroa jos haluat lopettaa.")
-            again = int(input("Paina 1, jos haluat valita uudestaan: "))
-            print()
-            if again == 1:
-                print()
-                print("Vaihdoehdot uudestaan:")
+            print("Paina mitä vain jos haluat lopettaa.")
+            again = input("Paina Enter, jos haluat valita uudestaan. ")
+            if again == "":
                 chosen = False
             else:
+                print()
                 print("Lopetit pelin.")
                 chosen = True
                 gameover1 = True
@@ -80,18 +79,21 @@ def choose_continent():
         if continentNro >= 1 and continentNro <=7 :
             print()
             print("Oletko tyytyväinen valintaasi?")
-            confirmation = input("Valitse uudelleen painamalla mitä tahansa, varmista valinta painamalla Enter.")
+            confirmation = input("Valitse uudelleen painamalla mitä tahansa, varmista valinta painamalla Enter. ")
             if confirmation == "":
                 print("Maanosa valittu!")
                 chosen = True
             else:
-                print()
-                print("Valitse uudestaan:")
                 chosen = False
-    return to_continent, gameover1
+                sql = f"SELECT continent FROM airport GROUP BY continent"
+                cursor = connection.cursor()
+                cursor.execute(sql)
+                continents = cursor.fetchall()
+    return continentA, gameover1
 
 
 def choose_country():
+    print()
     print()
     print("Valitse seuraavaksi maa.")
     print()
@@ -104,23 +106,23 @@ def choose_country():
     countries = cursor.fetchall()
     # print(countries)
 
-    gameover2 = False
+    times = 0
+    id = 1
+    for i in countries:
+        one = countries[times]
+        country = one[0]
+        print(f"{id}: {country}")
+        times += 1
+        id += 1
+
     chosen = False
     while chosen == False:
-        times = 0
-        id = 1
-        for i in countries:
-            one = countries[times]
-            country = one[0]
-            print(f"{id}: {country}")
-            times += 1
-            id += 1
-
+        gameover2 = False
         print()
         countryNro = int(input("Haluamasi maan numero: "))
         to_country = 0
         list_index = len(countries)
-        print(list_index)
+        # print(list_index)
 
         if countryNro >= 1 and countryNro <= list_index:
             index = countryNro - 1
@@ -130,28 +132,30 @@ def choose_country():
         else:
             print()
             print("Virheellinen arvo.")
-            print("Paina mitä vaan numeroa jos haluat lopettaa.")
-            again = int(input("Paina 1, jos haluat valita uudestaan: "))
+            print("Paina mitä vain, jos haluat lopettaa.")
+            again = input("Paina Enter, jos haluat valita uudestaan: ")
             print()
-            if again == 1:
-                print()
-                print("Vaihdoehdot uudestaan:")
+            if again == "":
                 chosen = False
             else:
+                print()
                 print("Lopetit pelin.")
+                chosen = True
                 gameover2 = True
 
-        if countryNro >= 1 and countryNro <= 60:
+        if countryNro >= 1 and countryNro <= list_index:
             print()
             print("Oletko tyytyväinen valintaasi?")
-            confirmation = input("Valitse uudelleen painamalla mitä tahansa, varmista valinta painamalla Enter.")
+            confirmation = input("Valitse uudelleen painamalla mitä tahansa, varmista valinta painamalla Enter. ")
             if confirmation == "":
                 print("Maa valittu!")
                 chosen = True
             else:
-                print()
-                print("Valitse uudestaan:")
                 chosen = False
+                sql = f"SELECT iso_country FROM airport WHERE continent = '{to_continent}' GROUP BY iso_country"
+                cursor = connection.cursor()
+                cursor.execute(sql)
+                countries = cursor.fetchall()
     return to_country, gameover2
 
 
@@ -161,32 +165,37 @@ def choose_municipality():
     print()
     print("Valitsemasi maan kaupungit, joissa on lentokenttä:")
 
-    sql = f"SELECT municipality, type FROM airport WHERE iso_country = '{country}' " \
-          f"or type = 'large_airport' or type = 'medium_airport' " \
-          f"or type = 'small_airport' GROUP BY municipality"
-    print(sql)
+    sql = f"SELECT municipality, type FROM airport WHERE iso_country = '{to_country}' " \
+          f"AND type = 'large_airport' OR iso_country = '{to_country}' " \
+          f"AND type = 'medium_airport' OR iso_country = '{to_country}' " \
+          f"AND type = 'small_airport' GROUP BY municipality"
+    # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     municipalities = cursor.fetchall()
     # print(municipalities)
+    print()
 
     gameover3 = False
     chosen = False
     while chosen == False:
         times = 0
         id = 1
+
         for i in municipalities:
-            one = municipalities[times]
-            municipality = one[0]
-            print(f"{id}: {municipality}")
+            if times != 0:
+                one = municipalities[times]
+                municipality = one[0]
+                print(f"{id}: {municipality}")
+                id += 1
             times += 1
-            id += 1
+
 
         print()
+        list_index = (len(municipalities)) - 1
+        print(list_index)
         municipalityNro = int(input("Haluamasi kaupungin numero: "))
         municipality = 0
-        list_index = len(municipalities)
-        print(list_index)
 
         if municipalityNro >= 1 and municipalityNro <= list_index:
             index = municipalityNro - 1
@@ -221,38 +230,114 @@ def choose_municipality():
     return municipality, gameover3
 
 
+def choose_airport():
+    print()
+    print("Valitse vielä lentokenttä.")
+    print()
+    print("Lentokentät valitsemassasi kaupungissa:")
+
+    sql = f"SELECT name, ident, type FROM airport WHERE municipality = '{municipality}' " \
+          f"AND type = 'large_airport' OR municipality = '{municipality}' " \
+          f"AND type = 'medium_airport' OR municipality = '{municipality}' " \
+          f"AND type = 'small_airport' ORDER BY type"
+    print(sql)
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    airports_list = cursor.fetchall()
+    print(airports_list)
+    print()
+
+    gameover4 = False
+    chosen = False
+    while chosen == False:
+        times = 0
+        id = 1
+
+        for i in airports_list:
+            one = airports_list[times]
+            airport_name = one[0]
+            airport_type = one[2]
+            print(f"{id}: {airport_name}, tyyppiä {airport_type}")
+            id += 1
+            times += 1
+
+
+        print()
+        list_index = (len(airports_list)) - 1
+        print(list_index)
+        airportNro = int(input("Haluamasi lentokentän numero: "))
+        airport = 0
+
+        if airportNro >= 1 and airportNro <= list_index:
+            index = airportNro - 1
+            airports_list = airports_list[index]
+            airport = airports_list[0]
+            airport_ident = airports_list[1]
+            print(f"Valitsemasi lentokenttä on {airport}.")
+        else:
+            print()
+            print("Virheellinen arvo.")
+            print("Paina mitä vaan numeroa jos haluat lopettaa.")
+            again = int(input("Paina 1, jos haluat valita uudestaan: "))
+            print()
+            if again == 1:
+                print()
+                print("Vaihdoehdot uudestaan:")
+                chosen = False
+            else:
+                print("Lopetit pelin.")
+                gameover4 = True
+
+        if airportNro >= 1:
+            print()
+            print("Oletko tyytyväinen valintaasi?")
+            confirmation = input("Valitse uudelleen painamalla mitä tahansa, varmista valinta painamalla Enter.")
+            if confirmation == "":
+                print("Lentokenttä valittu!")
+                chosen = True
+            else:
+                print()
+                print("Valitse uudestaan:")
+                chosen = False
+    return airport, airport_ident, gameover4
+
+
 def travel():
-    to_continent = choose_continent()
-    choose_country()
-    choose_municipality()
-    to_airport = choose_airport
+    gameover_main = False
+    while gameover_main == False:
+        result = choose_continent()
+        to_continent = result[0]
+        print(result[0])
+        gameover_main = result[1]
+        if gameover_main == True:
+            break
+
+        result = choose_country()
+        to_country = result[0]
+        gameover_main = result[1]
+        if gameover_main == True:
+            break
+
+        result = choose_municipality()
+        municipality = result[0]
+        gameover_main = result[1]
+        if gameover_main == True:
+            break
+
+        result = choose_airport()
+        to_airport = result[0]
+        airport_ident = result[1]
+        gameover_main = result[2]
+
+    return to_airport, to_continent, gameover_main
+
 
 
 
 # -- -- -- pääohjelma -- -- --
 
-gameover = False
-
-while gameover == False:
-    result = choose_continent()
-    to_continent = result[0]
-    gameover = result[1]
-    if gameover == True:
-        break
-
-    result = choose_country()
-    country = result[0]
-    gameover = result[1]
-    gameover = result[1]
-    if gameover == True:
-        break
-
-    result = choose_municipality()
-    municipality = result[0]
-    gameover = result[1]
-    if gameover == True:
-        break
-
-    # choose_airport()
+result = travel()
+travel_airport = result[0]
+travel_continent = result[2]
 
 print("Peli loppui.")
