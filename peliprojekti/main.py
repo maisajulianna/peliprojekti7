@@ -3,6 +3,8 @@ import time
 import sys
 import pygame
 import random
+import colorama
+from colorama import Fore, Back, Style
 
 
 connection = mysql.connector.connect(
@@ -16,7 +18,7 @@ connection = mysql.connector.connect(
 
 
 # --- --- alkujuttuja
-def print_text(screen, message, x, y, font_color=(0,0,0),\
+def print_text(screen, message, x, y, font_color=(0,0,0),
                font_type = "C:/Users/maisa/PycharmProjects/ohjelmisto1/peliprojekti/images/magneto_bold.ttf", font_size=20):
 
     # funktio näyttää tekstiä peli-ikkunassa
@@ -53,7 +55,7 @@ def welcome():
             screen.blit(tarina, tarina_rect)
             screen.blit(logo, logo_rect)
             pygame.display.flip()
-            # time.sleep(0.01)
+            time.sleep(0.01)
     pygame.quit()
 
 
@@ -116,16 +118,16 @@ def get_user():
 
     else: #Jos tietokannassa on samannimistä käyttäjää
         print_text(screen, "Olet jo aloittanut pelaamisen, haluatko jatkaa?", 10, 120)
-        print_text(screen, "a - jatka viimeistä peliä", 10, 150)
-        print_text(screen, "b - aloita uusi peli ja poista vanhan pelin tulokset", 10, 180)
-        print_text(screen, "c - vaihda käyttäjänimi", 10, 210)
+        print_text(screen, "a - vaihda käyttäjänimi", 10, 180)
+        print_text(screen, "b - aloita uusi peli ja poista vanhan pelin tulokset", 10, 210)
+        # print_text(screen, "c - jatka viimeistä peliä", 10, 150)
         need_input = True
         while need_input:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
                 if need_input and event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_a:
+                    if event.key == pygame.K_c:
                        print_text(screen, "a", 10, 240)
                        # time.sleep (3)
                        user = result               # user - kaikki tiedot nykyisestä pelaajasta
@@ -142,12 +144,77 @@ def get_user():
                         user = kursori.fetchone() # user - kaikki tiedot nykyisestä pelaajasta
                         need_input = False
                         time.sleep(3)
-                    if event.key == pygame.K_c:
+                    if event.key == pygame.K_a:
                         print_text(screen, "c", 10, 240)
                         need_input = False
                         user = get_user()  # Varoitus, rekursio!
     pygame.quit()
     return user
+
+
+# use it for saving results after each flight,
+# this function returns True if all continents are visited by user and
+# False otherwise
+def save_result(user, time_sec, score, airport):
+    yhteys = mysql.connector.connect(
+        host='127.0.0.1',  # localhost
+        port=3306,  # MariaDB port
+        database='flight_game',
+        user='userN',
+        password='1234',
+        autocommit=True)
+    kursori = yhteys.cursor()
+
+    # check where airport located
+    sql = "select country.continent from country inner join airport" \
+          " on country.iso_country=airport.iso_country where airport.ident ='"+airport+"';"
+    kursori.execute(sql)
+    continent = kursori.fetchone()
+
+    """update player's results
+    user[0] - id
+    user[1] - time in sec
+    user[2] - screen name
+    user[3] - score
+    user[4] - last_location
+    user[5] - AF (afrikka)
+    user[6] - AN (antarktikka)
+    user[7] - AS (australia)
+    user[8] - EU (europa)
+    user[9] - NA (north amerika)
+    user[10] - OC (australia and ocean) ??? 
+    user[11] - SA (south america)
+    """
+    sql = "update game set last_location='" + str(airport) +"', time_sec=" + str(user[1] + time_sec) + "," \
+                           " score=" + str(user[3]+score) + "," \
+                           " " + continent[0] +"_=TRUE where player_id=" + str(user[0]) + ";"
+
+    # print(sql)
+    kursori.execute(sql)
+
+
+    # check if all continents were visited
+    sql = "select  AF_*AN_*AS_*EU_*NA_*OC_*SA_ from game where player_id=" + str(user[0]) + ";"
+    kursori.execute(sql)
+    result = kursori.fetchone()
+    result = bool(result[0])
+
+    #if result = True all continents were visited, so we need to save result to table result
+    if result:
+        sql = "select * from game where player_id=" + str(user[0]) + ";"
+        kursori.execute(sql)
+        user = kursori.fetchone()
+        """
+        user[0] - id
+        user[1] - time in sec
+        user[2] - screen name
+        user[3] - score
+        """
+        sql = "insert into results (player_id, screen_name, score, time_sec) " \
+              "values ("+str(user[0])+", '" + str(user[2]) + "', " + str(user[3]) + ", " + str(user[1])+ ");"
+        kursori.execute(sql)
+
+    return result
 
 
 def peliohjeet():
@@ -219,6 +286,7 @@ def end():
         print_text(screen, str(t[3]), 360, rivi)
         rivi += 40
 
+    connection.close()
     time.sleep(5)
 
 
@@ -236,42 +304,40 @@ def timenoprint(s):
     # print("Aika loppui!")
 
 
-def options():
+def options(planeNumber):
     loop = True
+    planeNumber = planeNumber
     while loop == True:
         print()
         print("1: Vaihda lentokone")
-        # print("2: Tallenna tämänhetkiset tiedot")
-        print("3: Poista aikaisemmat tiedot")
-        print("4: Näytä peliohjeet uudestaan")
+        print("2: Näytä peliohjeet uudestaan")
         print()
         choice = int(input("Mitä haluaisit tehdä? "))
         if choice == 1:
-            plane = choose_plane()
-            return plane
+            planeNumber = choose_plane()
+            loop = False
         elif choice == 2:
-            saved = save_result()
-            print(f"Tallennettu tietoja nimellä {saved[0]}: {saved[1]} pistettä, {saved[2]} tuntia, paikassa {saved[3]}")
-        elif choice == 3:
-            delete_game(user)
-        elif choise == 4:
             peliohjeet()
+            loop = False
         else:
             print()
             print("Virheellinen arvo.")
-            loop = int(input("Paina 1 jos haluat jatkaa valitsemista, 2 jos haluat lopettaa. "))
+            loop = input("Paina 1 jos haluat jatkaa valitsemista, 2 jos haluat lopettaa. ")
             if loop == "1":
                 loop = True
             elif loop == "2":
                 print("Prosessi lopetettu.")
                 loop = False
+    return planeNumber
 
 
-def choose_options():
+def choose_options(plane):
     print()
     option = input("(Paina kirjainta V jos haluat nähdä vaihtoehdot.) ")
     if option == "v" or option == "V":
-        options()
+        plane = options(plane)
+    return plane
+
 
 
 def continent_name(continent_abbr):
@@ -288,8 +354,53 @@ def continent_name(continent_abbr):
     elif continent_abbr == 'AS':
         continent_fi = "Aasia"
     elif continent_abbr == 'AN':
-        continent_fi = "Antarctica"
+        continent_fi = "Etelämanner"
     return continent_fi
+
+
+def user_continents(user):
+    colorama.init()
+
+    sql = f"SELECT * FROM game WHERE player_id = '{user[0]}'"
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    temp_list = cursor.fetchone()
+    # print(temp_list)
+    print()
+    print("Vihreällä maanosat, joissa olet jo käynyt, punaisella ne, jotka on käymättä:")
+
+    if temp_list[5]:
+        print(Fore.GREEN + "AFRIKKA")
+    else:
+        print(Fore.RED + "AFRIKKA")
+    if temp_list[6]:
+        print(Fore.GREEN + "ETELÄMANNER")
+    else:
+        print(Fore.RED + "ETELÄMANNER")
+    if temp_list[7]:
+        print(Fore.GREEN + "ASIA")
+    else:
+        print(Fore.RED + "ASIA")
+    if temp_list[8]:
+        print(Fore.GREEN + "EUROOPPA")
+    else:
+        print(Fore.RED + "EUROOPPA")
+    if temp_list[9]:
+        print(Fore.GREEN + "POHJOIS-AMERIKKA")
+    else:
+        print(Fore.RED + "POHJOIS-AMERIKKA")
+    if temp_list[10]:
+        print(Fore.GREEN + "AUSTRALIA")
+    else:
+        print(Fore.RED + "AUSTRALIA")
+    if temp_list[11]:
+        print(Fore.GREEN + "ETELÄ-AMERIKKA")
+    else:
+        print(Fore.RED + "ETELÄ-AMERIKKA")
+
+    time.sleep(3)
+
+    print(Style.RESET_ALL)
 
 
 
@@ -360,7 +471,7 @@ def choose_plane():
                 cursor = connection.cursor()
                 cursor.execute(sql)
                 planes = cursor.fetchall()
-    return planeNumber, plane
+    return planeNumber
 
 
 def choose_start():
@@ -453,7 +564,7 @@ def choose_continent(from_continent):
         continenT = continent_name(continent_abbr)
         print(f"{id}: {continenT}")
         if continent_abbr == from_continent:
-            print("(Olet jo täällä!)")
+            print("Olet nyt täällä!)")
         times += 1
         id += 1
 
@@ -611,12 +722,10 @@ def choose_airport(to_country):
         else:
             print()
             print("Virheellinen arvo.")
-            print("Paina mitä vaan numeroa jos haluat lopettaa.")
-            again = int(input("Paina 1, jos haluat valita uudestaan: "))
+            print("Paina mitä vain, jos haluat lopettaa.")
+            again = input("Paina Enter, jos haluat valita uudestaan: ")
             print()
-            if again == 1:
-                print()
-                print("Vaihdoehdot uudestaan:")
+            if again == "":
                 chosen = False
             else:
                 print("Lopetit pelin.")
@@ -673,7 +782,6 @@ def travel():
 # --- ---  kysymysfunktiot
 def QuestionA(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
     print()
-    print(tehtävänanto)
     print("Painamalla Enter kesken vastaamisen näät kuluneen ajan.")
     start = input("Sinulla on 20 sekuntia aikaa, paina Enter aloittaaksesi: ")
     start_time = time.time()
@@ -682,11 +790,14 @@ def QuestionA(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
     # vaihtoehdot tulostuu, jos vastauskenttä on tyhjä
     if start == "":
         print()
+        print(tehtävänanto)
+        print()
         print(f"Vaihtoehto A: {vaihtoehto1}")
         print(f"Vaihtoehto B: {vaihtoehto2}")
         print(f"Vaihtoehto C: {vaihtoehto3}")
 
     # tehtävä jatkuu, kun vastauskenttä on tyhjä
+    aloitus = True
     while start == "":
         print()
         answer = input("Vastauksesi: ")
@@ -718,31 +829,30 @@ def QuestionA(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
         if points == 0:
             endtime = 20
             print("Yrityksesi loppuivat.")
-            start = stop
+            aloitus = False
 
         # tehtävä loppuu ja pisteet nollautuu, jos vastaamisessa menee yli 20 sekuntia
         now = time.time()
         timer = now - start_time
         if timer >= aika:
             print("Aika loppui :(")
-            start = stop
+            aloitus = False
 
         # kulunut aika tulostuu, jos käyttäjä ei ole vielä antanut oikeaa vastausta
         if answer != "A" and answer != "a":
             print(f"Aikaa kulunut {round(timer)} sekuntia.")
 
-    if start != "" and start != "stop":
+    if aloitus == False:
         points = 0
         endtime = 20
 
     print()
-    print(f"Sait {points} pistettä ja aikaa lennolla on kulunut {round(endtime)} tuntia.")
+    print(f"Sait {points} pistettä ja aikaa kului {round(endtime)} tuntia.")
     return points, round(endtime)
 
 
 def QuestionB(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
     print()
-    print(tehtävänanto)
     print("Painamalla Enter kesken vastaamisen näät kuluneen ajan.")
     start = input("Sinulla on 20 sekuntia aikaa, paina Enter aloittaaksesi: ")
     start_time = time.time()
@@ -750,6 +860,8 @@ def QuestionB(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
 
     # vaihtoehdot tulostuu, jos vastauskenttä on tyhjä
     if start == "":
+        print()
+        print(tehtävänanto)
         print()
         print(f"Vaihtoehto A: {vaihtoehto1}")
         print(f"Vaihtoehto B: {vaihtoehto2}")
@@ -807,13 +919,12 @@ def QuestionB(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
         endtime = 20
 
     print()
-    print(f"Sait {points} pistettä ja aikaa lennolla on kulunut {round(endtime)} tuntia.")
+    print(f"Sait {points} pistettä ja aikaa kului {round(endtime)} tuntia.")
     return points, round(endtime)
 
 
 def QuestionC(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
     print()
-    print(tehtävänanto)
     print("Painamalla Enter kesken vastaamisen näät kuluneen ajan.")
     start = input("Sinulla on 20 sekuntia aikaa, paina Enter aloittaaksesi: ")
     start_time = time.time()
@@ -821,6 +932,8 @@ def QuestionC(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
 
     # vaihtoehdot tulostuu, jos vastauskenttä on tyhjä
     if start == "":
+        print()
+        print(tehtävänanto)
         print()
         print(f"Vaihtoehto A: {vaihtoehto1}")
         print(f"Vaihtoehto B: {vaihtoehto2}")
@@ -878,7 +991,7 @@ def QuestionC(tehtävänanto, vaihtoehto1, vaihtoehto2,vaihtoehto3, aika):
         endtime = 20
 
     print()
-    print(f"Sait {points} pistettä ja aikaa lennolla on kulunut {round(endtime)} tuntia.")
+    print(f"Sait {points} pistettä ja aikaa kului {round(endtime)} tuntia.")
     return points, round(endtime)
 
 
@@ -901,22 +1014,21 @@ def pistelaskuri(kokonaispisteet_lista):
     # lisätään kulunut aika kokonaismäärään
     for a in kokonaispisteet_lista:
         yhteisaika += a[1]
-    print(f"Aikaa on kulunut {yhteisaika} tuntia.")
+    print(f"Aikaa lennolla kului {yhteisaika} tuntia.")
     return yhteispisteet, yhteisaika
 
 
 def travel_questionsAF(planeNumber):
-    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = {planeNumber}"
     print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     planelist_list = cursor.fetchall()
     planelist = planelist_list[0]
-    print(planelist)
+    # print(planelist)
 
     print()
     print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
-    input("Paina Enter jatkaaksesi. ")
 
     rip = False
     kokonaispisteet_lista = []
@@ -944,17 +1056,16 @@ def travel_questionsAF(planeNumber):
 
 
 def travel_questionsAN(planeNumber):
-    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
-    print(sql)
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = {planeNumber}"
+    # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     planelist_list = cursor.fetchall()
     planelist = planelist_list[0]
-    print(planelist)
+    # print(planelist)
 
     print()
     print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
-    input("Paina Enter jatkaaksesi. ")
 
     play_points = 0
     kokonaispisteet_lista = []
@@ -982,20 +1093,19 @@ def travel_questionsAN(planeNumber):
 
 
 def travel_questionsAS(planeNumber):
-    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
-    print(sql)
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = {planeNumber}"
+    # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     planelist_list = cursor.fetchall()
     planelist = planelist_list[0]
-    print(planelist)
+    # print(planelist)
 
     print()
     print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
-    input("Paina Enter jatkaaksesi. ")
 
     kokonaispisteet_lista = []
-    rip = False
+    play_points = 0
     if planeNumber == 1 or planeNumber == 2:
         result1 = QuestionC("Missä maassa sijaitsee maailman korkein vapaasti seisova lipputanko (165m)?", "Kiinassa", "Bhutanissa", "Tadzikistanissa", 20)
         kokonaispisteet_lista.append(result1)
@@ -1006,34 +1116,33 @@ def travel_questionsAS(planeNumber):
         kokonaispisteet_lista.append(result3)
         result4 = QuestionB("Montako jokea virtaa Saudi-Arabiassa?", "1", "0", "3", 20)
         kokonaispisteet_lista.append(result4)
-        rip = incident_risk3(1)
+        play_points = incident_risk3(1)
     elif planeNumber == 3:
         result1 = QuestionC("Missä maassa sijaitsee maailman korkein vapaasti seisova lipputanko (165m)?", "Kiinassa", "Bhutanissa", "Tadzikistanissa", 20)
         kokonaispisteet_lista.append(result1)
         result2 = QuestionB("Montako jokea virtaa Saudi-Arabiassa?", "1", "0", "3", 20)
         kokonaispisteet_lista.append(result2)
-        rip = incident_risk3(2)
+        play_points = incident_risk3(2)
     elif planeNumber == 4:
         result1 = QuestionC("Montako maatilaa on Singaporessa?", "9", "37", "0", 20)
         kokonaispisteet_lista.append(result1)
-        rip = incident_risk3(3)
-    return kokonaispisteet_lista, rip
+        play_points = incident_risk3(3)
+    return kokonaispisteet_lista, play_points
 
 
 def travel_questionsEU(planeNumber):
-    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
-    print(sql)
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = {planeNumber}"
+    # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     planelist_list = cursor.fetchall()
     planelist = planelist_list[0]
-    print(planelist)
+    # print(planelist)
 
     print()
     print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
-    input("Paina Enter jatkaaksesi. ")
 
-    rip = False
+    play_points = 0
     kokonaispisteet_lista = []
     if planeNumber == 1 or planeNumber == 2:
         result1 = QuestionC("Monelleko aikavyöhykkeelle Ranska ulottuu, kun otetaan huomioon sen territoriot ja alusmaat?", "5", "9", "12", 20)
@@ -1045,36 +1154,35 @@ def travel_questionsEU(planeNumber):
         kokonaispisteet_lista.append(result3)
         result4 = QuestionB("Kuinka suuri osa Kosovon asukkaista on alle 25-vuotiaita?", "Neljännes", "Puolet", "Noin 10%", 20)
         kokonaispisteet_lista.append(result4)
-        rip = incident_risk4(1)
+        play_points = incident_risk4(1)
     elif planeNumber == 3:
         result1 = QuestionB("Kuinka suuri osa Kosovon asukkaista on alle 25-vuotiaita?", "Neljännes", "Puolet", "Noin 10%", 20)
         kokonaispisteet_lista.append(result1)
         result2 = QuestionB("Missä maassa sijaitsee Longyearbyen kaupunki, jossa 'kuoleminen on kiellettyä', "
                             "koska kylmyyden vuoksi ruumiit eivät maadu?", "Ruotsissa", "Norjassa", "Islannissa", 20)
         kokonaispisteet_lista.append(result2)
-        rip = incident_risk4(2)
+        play_points = incident_risk4(2)
     elif planeNumber == 4:
         result1 = QuestionA("Missä maassa sijaitsee Longyearbyen kaupunki, jossa 'kuoleminen on kiellettyä', "
                             "koska kylmyyden vuoksi ruumiit eivät maadu?", "Norjassa", "Ruotsissa", "Islannissa", 20)
         kokonaispisteet_lista.append(result1)
-        rip = incident_risk4(3)
-    return kokonaispisteet_lista, rip
+        play_points = incident_risk4(3)
+    return kokonaispisteet_lista, play_points
 
 
 def travel_questionsNA(planeNumber):
-    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
-    print(sql)
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = {planeNumber}"
+    # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     planelist_list = cursor.fetchall()
     planelist = planelist_list[0]
-    print(planelist)
+    # print(planelist)
 
     print()
     print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
-    input("Paina Enter jatkaaksesi. ")
 
-    rip = False
+    play_points = 0
     kokonaispisteet_lista = []
     if planeNumber == 1 or planeNumber == 2:
         result1 = QuestionB("Mitä Guamin saarelta ei löydy lainkaan?", "Asfalttia", "Hiekkaa", "Soraa", 20)
@@ -1085,34 +1193,33 @@ def travel_questionsNA(planeNumber):
         kokonaispisteet_lista.append(result3)
         result4 = QuestionA("Montako ihmistä Meksikossa on kadonnut viimeisen vuosikymmenen aikana?", "Yli 27 000", "Noin 9000", "Noin 15 000", 20)
         kokonaispisteet_lista.append(result4)
-        rip = incident_risk5(1)
+        play_points = incident_risk5(1)
     elif planeNumber == 3:
         result1 = QuestionA("Montako ihmistä Meksikossa on kadonnut viimeisen vuosikymmenen aikana?", "Yli 27 000", "Noin 9000", "Noin 15 000", 20)
         kokonaispisteet_lista.append(result1)
         result2 = QuestionC("Kuinka pitkä on Kanadan rantaviiva?", "130 421 kilometriä", "190 134 kilometriä", "202 080 kilometriä", 20)
         kokonaispisteet_lista.append(result2)
-        rip = incident_risk5(2)
+        play_points = incident_risk5(2)
     elif planeNumber == 4:
         result1 = QuestionB("Mitä Guamin saarelta ei löydy lainkaan?", "Asfalttia", "Soraa", "Hiekkaa", 20)
         kokonaispisteet_lista.append(result1)
-        rip = incident_risk5(3)
-    return kokonaispisteet_lista, rip
+        play_points = incident_risk5(3)
+    return kokonaispisteet_lista, play_points
 
 
 def travel_questionsOC(planeNumber):
-    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
-    print(sql)
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = {planeNumber}"
+    # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     planelist_list = cursor.fetchall()
     planelist = planelist_list[0]
-    print(planelist)
+    # print(planelist)
 
     print()
     print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
-    input("Paina Enter jatkaaksesi. ")
 
-    rip = False
+    play_points = 0
     kokonaispisteet_lista = []
     if planeNumber == 1 or planeNumber == 2:
         result1 = QuestionA("Minkä valtion virallisia kolikoita koristavat Pokemon-, Disney- ja Star Wars -hahmot?", "Niue", "Australia", "Uusi-Seelanti", 20)
@@ -1123,34 +1230,34 @@ def travel_questionsOC(planeNumber):
         kokonaispisteet_lista.append(result3)
         result4 = QuestionC("Paljonko painoindeksi on Naurussa asukasta kohden?", "20-21", "26-28", "34-35", 20)
         kokonaispisteet_lista.append(result4)
-        rip = incident_risk6(1)
+        play_points = incident_risk6(1)
     elif planeNumber == 3:
         result1 = QuestionB("Montako maata Oseaniaan kuuluu?", "12", "23", "18", 20)
         kokonaispisteet_lista.append(result1)
         result2 = QuestionC("Minkä valtion virallisia kolikoita koristavat Pokemon-, Disney- ja Star Wars -hahmot?", "Uusi-Seelanti", "Australia", "Niue", 20)
         kokonaispisteet_lista.append(result2)
-        rip = incident_risk6(2)
+        play_points = incident_risk6(2)
     elif planeNumber == 4:
         result1 = QuestionA("Minkä valtion virallisia kolikoita koristavat Pokemon-, Disney- ja Star Wars -hahmot?", "Niue", "Australia", "Uusi-Seelanti", 20)
         kokonaispisteet_lista.append(result1)
-        rip = incident_risk6(3)
-    return kokonaispisteet_lista, rip
+        play_points = incident_risk6(3)
+    return kokonaispisteet_lista, play_points
 
 
 def travel_questionsSA(planeNumber):
-    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = '{planeNumber}'"
-    print(sql)
+    sql = f"SELECT type, risk, questions FROM plane_info WHERE id = {planeNumber}"
+    # print(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     planelist_list = cursor.fetchall()
     planelist = planelist_list[0]
-    print(planelist)
+    # print(planelist)
 
     print()
     print(f"Valitsemallasi lentokoneella '{planelist[0]}' riskitaso on {planelist[1]} prosenttia ja kysymyksiä on {planelist[2]}.")
-    input("Paina Enter jatkaaksesi. ")
+    # input("Paina Enter jatkaaksesi. ")
 
-    rip = False
+    play_points = 0
     kokonaispisteet_lista = []
     if planeNumber == 1 or planeNumber == 2:
         result1 = QuestionA("Montako prosenttia Surinamen pinta-alasta on metsää?", "94,6 prosenttia", "73,1 prosenttia", "53,4 prosenttia", 20)
@@ -1162,66 +1269,64 @@ def travel_questionsSA(planeNumber):
         kokonaispisteet_lista.append(result3)
         result4 = QuestionA("Montako valtiota Etelä-Amerikassa on?", "12", "17", "9", 20)
         kokonaispisteet_lista.append(result4)
-        rip = incident_risk7(1)
+        play_points = incident_risk7(1)
     elif planeNumber == 3:
         result1 = QuestionC("Venezuelassa sijaitsee Heladeria Coromoto -jäätelöbaari, jossa on maailman "
                             "laajin makuvalikoima. Montako eri jäätelömakua siellä on saatavilla?", "91", "157", "860", 20)
         kokonaispisteet_lista.append(result1)
         result2 = QuestionA("Montako valtiota Etelä-Amerikassa on?", "12", "17", "9", 20)
         kokonaispisteet_lista.append(result2)
-        rip = incident_risk7(2)
+        play_points = incident_risk7(2)
     elif planeNumber == 4:
         result1 = QuestionB("Montako miljoonakaupunkia Brasiliassa on?", "7", "13", "21", 20)
         kokonaispisteet_lista.append(result1)
-        rip = incident_risk7(3)
-    return kokonaispisteet_lista, rip
+        play_points = incident_risk7(3)
+    return kokonaispisteet_lista, play_points
 
 
-def which_question(continent_abb, planeNro):
+def which_question(continent_abb, planeNumber):
     kokonaispisteet_funktiossa = 0
-    if continent_abb == AF:
-        result = travel_questionsAF(planeNro)
+    if continent_abb == "AF":
+        result = travel_questionsAF(planeNumber)
         kokonaispisteet_lista = result[0]
-        rip = result[1]
-        return kokonaispisteet_lista, rip
-    elif continent_abb == AN:
-        result = travel_questionsAN(planeNro)
+        points = result[1]
+        kokonaispisteet_funktiossa += points
+        return kokonaispisteet_lista, points
+    elif continent_abb == "AN":
+        result = travel_questionsAN(planeNumber)
         kokonaispisteet_lista = result[0]
-        morepoints = result[1]
-        kokonaispisteet_funktiossa += morepoints
+        points = result[1]
+        kokonaispisteet_funktiossa += points
         return kokonaispisteet_lista, kokonaispisteet_funktiossa
-    elif continent_abb == AS:
-        result = travel_questionsAS(planeNro)
+    elif continent_abb == "AS":
+        result = travel_questionsAS(planeNumber)
         kokonaispisteet_lista = result[0]
-        lesspoints = result[1]
-        kokonaispisteet_funktiossa -= lesspoints
+        points = result[1]
+        kokonaispisteet_funktiossa += points
         return kokonaispisteet_lista, kokonaispisteet_funktiossa
-    elif continent_abb == EU:
-        result = travel_questionsEU(planeNro)
+    elif continent_abb == "EU":
+        result = travel_questionsEU(planeNumber)
         kokonaispisteet_lista = result[0]
-        lesspoints = result[1]
-        kokonaispisteet_funktiossa -= lesspoints
+        points = result[1]
+        kokonaispisteet_funktiossa += points
         return kokonaispisteet_lista, kokonaispisteet_funktiossa
-    elif continent_abb == NA:
-        result = travel_questionsNA(planeNro)
+    elif continent_abb == "NA":
+        result = travel_questionsNA(planeNumber)
         kokonaispisteet_lista = result[0]
-        morepoints = result[1]
-        kokonaispisteet_funktiossa += morepoints
+        points = result[1]
+        kokonaispisteet_funktiossa += points
         return kokonaispisteet_lista, kokonaispisteet_funktiossa
-    elif continent_abb == OC:
-        result = travel_questionsOC(planeNro)
+    elif continent_abb == "OC":
+        result = travel_questionsOC(planeNumber)
         kokonaispisteet_lista = result[0]
-        lesspoints = result[1]
-        kokonaispisteet_funktiossa -= lesspoints
+        points = result[1]
+        kokonaispisteet_funktiossa += points
         return kokonaispisteet_lista, kokonaispisteet_funktiossa
-    elif continent_abb == SA:
-        result = travel_questionsSA(planeNro)
+    elif continent_abb == "SA":
+        result = travel_questionsSA(planeNumber)
         kokonaispisteet_lista = result[0]
-        points_received = result[1]
-        if result[1] == True:
-            kokonaispisteet_funktiossa += points_received
-        else:
-            kokonaispisteet_funktiossa -= points_received
+        points = result[1]
+        kokonaispisteet_funktiossa += points
         return kokonaispisteet_lista, kokonaispisteet_funktiossa
 
 
@@ -1230,7 +1335,7 @@ def which_question(continent_abb, planeNro):
 # --- --- random eventit
 def incident_risk1(luku):
     incident = random.randint(1,5)
-    rip = False
+    points = 0
     if incident <= luku:
         kolikko = random.choice(["Kruuna", "Klaava"])
         print("Lentokoneesi on syöksylaskussa!")
@@ -1251,16 +1356,24 @@ def incident_risk1(luku):
         if kolikko == kolikonheitto_satunnainen:
             print("Selvisit! Laskeudut turvallisesti seuraavalle lentokentälle.")
         else:
-            print("Onni ei suosinut sinua! Joudut palaamaan edelliselle lentokentälle.")
-            rip = True
+            print()
+            print("Hävisit! Olet nyt yksin syöksyävässä koneessa... vaihtoehdot ovat vähissä.")
+            print("Päätät hypätä vapaapudotukseen ja toivoa parasta.")
+            print("Muistikuvat hämärtyvät...")
+            input("Paina 'Enter' jatkaaksesi")
+            print()
+            print("Joku ravistelee sinut hereille... merirosvoja!! X_X")
+            print()
+            print("Olet selvästikin selvinnyt pudotuksesta ja ajelehtinut autiolle saarelle.")
+            print("Piraatit tarjoavat sinulle kyydin sivistyksen pariin kolmella pisteellä.")
+            print("Päätät tarttua tarjoukseen, muuta vaihtoehtoa ei ole.")
+            points -= 3
     else:
         print("Saavuit kohteeseen turvallisesti!")
 
-    return rip
+    return points
 
 
-
-# PALAUTA POINTS EI RIP !!
 def incident_risk2(luku):
     incident = random.randint(1,5)
     points = 0
@@ -1293,7 +1406,6 @@ def incident_risk2(luku):
     return points
 
 
-#tästä vähenee pisteet!!!
 def incident_risk3(luku):
     incident = random.randint(1,5)
     points = 0
@@ -1333,7 +1445,7 @@ def incident_risk3(luku):
                         print("'Wrong answer pal...'")
                         print()
                         print("Heräät lentokoneen ensiapuvuoteelta, hoitokulusi ovat 4 pistettä.")
-                        points = 4
+                        points -= 4
                     toiminta = False
 
                     if valinta == "b":
@@ -1353,7 +1465,6 @@ def incident_risk3(luku):
     return points
 
 
-# pisteet vähenee
 def incident_risk4(luku):
     incident = random.randint(1,5)
     points = 0
@@ -1365,7 +1476,7 @@ def incident_risk4(luku):
 
         if valinta.lower() == "kyllä" or "k":
             print("Annoit pisteen.")
-            points = 1
+            points -= 1
         if valinta.lower() == "ei" or "e":
             print("Koditon: :-(")
     else:
@@ -1374,7 +1485,6 @@ def incident_risk4(luku):
     return points
 
 
-# lisää pisteitä
 def incident_risk5(luku):
     incident = random.randint(1,5)
     points = 0
@@ -1410,7 +1520,6 @@ def incident_risk5(luku):
     return points
 
 
-# pisteet vähenee
 def incident_risk6(luku):
     incident = random.randint(1,5)
     points = 0
@@ -1451,7 +1560,7 @@ def incident_risk6(luku):
                     valinta = input("Vastauksesi: ").lower()
                     if valinta == "b":
                         print("Ostit oman lipun ':D'")
-                        points = 2
+                        points = -2
                     toiminta = False
 
                     if valinta == "a":
@@ -1461,13 +1570,13 @@ def incident_risk6(luku):
                         print("Turvakameratalleenteesta on selvinnyt, että varastit lipun.")
                         print()
                         print("Rangaistukseksi saat 4 pisteen sakon.")
-                        points = 4
+                        points -= 4
 
                     toiminta = False
 
                 elif pelaaja == "a":
                     print("Ostit oman lipun ':D'")
-                    points = 2
+                    points = -2
                 toiminta = False
     else:
         print("Saavuit kohteeseen turvallisesti!")
@@ -1475,12 +1584,9 @@ def incident_risk6(luku):
     return points
 
 
-
-# SOS molempiin mahdollisuus
 def incident_risk7(luku):
     incident = random.randint(1,5)
     points = 0
-    add_points = True
     if incident <= luku:
         print("Sinut haastetaan 'kivi, paperi, sakset' -peliin.")
         print("Voit joko voittaa tai hävitä yhden pisteen.")
@@ -1528,12 +1634,12 @@ def incident_risk7(luku):
 
             else:
                 print("Sinä hävisit. (-1 piste)")
+                points -= 1
             toiminta = False
-            add_points = False
     else:
         print("Saavuit kohteeseen turvallisesti!")
 
-    return points, add_points
+    return points
 
 
 
@@ -1549,13 +1655,6 @@ kokonaispisteet_summa = 0
 aikaakulunut = 0
 MainGameOver = False
 
-AF = False
-AN = False
-AS = False
-EU = False
-NA = False
-OC = False
-SA = False
 
 
 # asking username and welcoming player
@@ -1566,18 +1665,44 @@ timenoprint(1)
 
 # --- MAIN PELI:
 
-while MainGameOver == False:
-    # lentokoneen ja lähtöpaikan valinta
-    result = choose_plane()
-    planeNumber = result[0]
-    plane = result[1]
+# lentokoneen ja lähtöpaikan valinta
+planeNumber = choose_plane()
 
-    result = choose_start()
-    start_airport = result[0]
-    start_continent = result[1]
+result = choose_start()
+start_airport = result[0]
+start_continent = result[1]
 
 
-    # ensimmäisen matkakohteen valinta
+# ensimmäisen matkakohteen valinta
+user_continents(user)
+
+print()
+result = travel()
+travel_airport = result[0]
+travel_ident = result[1]
+travel_continent = result[2]
+MainGameOver = result[3]
+
+peliohjeet()
+
+# 1. kohde
+print("Lento alkaa.")
+print()
+result = which_question(travel_continent, planeNumber)
+kokonaispisteet_lista = result[0]
+pisteitä = result[1]
+
+result = pistelaskuri(kokonaispisteet_lista)
+kokonaispisteet_summa = result[0] + (pisteitä)
+aikaakulunut = result[1]
+
+save_result(user, aikaakulunut, kokonaispisteet_summa, travel_ident)
+planeNumber = choose_options(planeNumber)
+
+
+continue_ = save_result(user, aikaakulunut, kokonaispisteet_summa, travel_ident)
+while continue_ == False:
+    user_continents(user)
     print()
     result = travel()
     travel_airport = result[0]
@@ -1585,11 +1710,9 @@ while MainGameOver == False:
     travel_continent = result[2]
     MainGameOver = result[3]
 
-
-    peliohjeet()
-
-    # 1. kohde
-    result = which_question(travel_continent, travel_airport)
+    print("Lento alkaa.")
+    print()
+    result = which_question(travel_continent, planeNumber)
     kokonaispisteet_lista = result[0]
     pisteitä = result[1]
 
@@ -1598,136 +1721,10 @@ while MainGameOver == False:
     print(f"Sinulla on tällä hetkellä {kokonaispisteet_summa} pistettä")
     aikaakulunut = result[1]
 
+    continue_ = save_result(user, aikaakulunut, kokonaispisteet_summa, travel_ident)
+    planeNumber = choose_options(planeNumber)
 
-    # 2. kohde
-    print()
-    result = travel()
-    travel_airport = result[0]
-    travel_ident = result[1]
-    travel_continent = result[2]
-    MainGameOver = result[3]
+# game over screen
+end()
 
-
-    result = which_question(travel_continent, travel_airport)
-    kokonaispisteet_lista = result[0]
-    pisteitä = result[1]
-
-    result = pistelaskuri(kokonaispisteet_lista)
-    kokonaispisteet_summa = result[0] + (pisteitä)
-    print(f"Sinulla on tällä hetkellä {kokonaispisteet_summa} pistettä")
-    aikaakulunut = result[1]
-
-
-    # 3. kohde
-    print()
-    result = travel()
-    travel_airport = result[0]
-    travel_ident = result[1]
-    travel_continent = result[2]
-    MainGameOver = result[3]
-
-
-    result = which_question(travel_continent, travel_airport)
-    kokonaispisteet_lista = result[0]
-    pisteitä = result[1]
-
-    result = pistelaskuri(kokonaispisteet_lista)
-    kokonaispisteet_summa = result[0] + (pisteitä)
-    print(f"Sinulla on tällä hetkellä {kokonaispisteet_summa} pistettä")
-    aikaakulunut = result[1]
-
-
-
-    # 4. kohde
-    print()
-    result = travel()
-    travel_airport = result[0]
-    travel_ident = result[1]
-    travel_continent = result[2]
-    MainGameOver = result[3]
-
-
-    result = which_question(travel_continent, travel_airport)
-    kokonaispisteet_lista = result[0]
-    pisteitä = result[1]
-
-    result = pistelaskuri(kokonaispisteet_lista)
-    kokonaispisteet_summa = result[0] + (pisteitä)
-    print(f"Sinulla on tällä hetkellä {kokonaispisteet_summa} pistettä")
-    aikaakulunut = result[1]
-
-
-
-
-    # 5. kohde
-    print()
-    result = travel()
-    travel_airport = result[0]
-    travel_ident = result[1]
-    travel_continent = result[2]
-    MainGameOver = result[3]
-
-
-    result = which_question(travel_continent, travel_airport)
-    kokonaispisteet_lista = result[0]
-    pisteitä = result[1]
-
-    result = pistelaskuri(kokonaispisteet_lista)
-    kokonaispisteet_summa = result[0] + (pisteitä)
-    print(f"Sinulla on tällä hetkellä {kokonaispisteet_summa} pistettä")
-    aikaakulunut = result[1]
-
-
-
-
-    # 6. kohde
-    print()
-    result = travel()
-    travel_airport = result[0]
-    travel_ident = result[1]
-    travel_continent = result[2]
-    MainGameOver = result[3]
-
-
-    result = which_question(travel_continent, travel_airport)
-    kokonaispisteet_lista = result[0]
-    pisteitä = result[1]
-
-    result = pistelaskuri(kokonaispisteet_lista)
-    kokonaispisteet_summa = result[0] + (pisteitä)
-    print(f"Sinulla on tällä hetkellä {kokonaispisteet_summa} pistettä")
-    aikaakulunut = result[1]
-
-
-
-    # 7. kohde
-    print()
-    result = travel()
-    travel_airport = result[0]
-    travel_ident = result[1]
-    travel_continent = result[2]
-    MainGameOver = result[3]
-
-
-    result = which_question(travel_continent, travel_airport)
-    kokonaispisteet_lista = result[0]
-    pisteitä = result[1]
-
-    result = pistelaskuri(kokonaispisteet_lista)
-    kokonaispisteet_summa = result[0] + (pisteitä)
-    print(f"Sinulla on tällä hetkellä {kokonaispisteet_summa} pistettä")
-    aikaakulunut = result[1]
-
-
-
-
-    choose_options()
-    save_result(user, aikaakulunut, kokonaispisteet_summa, airport)
-
-    choose_options()
-
-
-    # game over screen
-    # end()
-
-print("Peli loppui.")
+print("Peli loppui!")
